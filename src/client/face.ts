@@ -48,25 +48,27 @@ export interface NovelFace {
 }
 
 /**
- * Build the face over the mounted `remote.novel` namespace.
+ * Build the face over the `remote.novel` namespace. The namespace is resolved
+ * lazily per call, so the face may be handed to the page before this plugin's
+ * own `$mount` of the generated contribution settles.
  * @param ctx - browser plugin context carrying the typed Remote service.
  * @returns the writing-desk data face.
  */
 export function createNovelFace(ctx: ClientContext): NovelFace {
-  const remote = ctx.remote.novel
+  const remote = (): ClientContext['remote']['novel'] => ctx.remote.novel
   return {
-    listNovels: () => unwrap(remote.list()),
-    getNovel: novelId => unwrap(remote.detail(novelId)),
-    getChapter: chapterId => unwrap(remote.chapter(chapterId)),
-    createNovel: input => unwrap(remote.create(input)),
-    updateNovel: (novelId, patch) => unwrap(remote.update(novelId, patch)),
-    deleteNovel: novelId => unwrap(remote.delete(novelId)),
-    createChapter: (novelId, input) => unwrap(remote.chapterCreate(novelId, input)),
-    updateChapter: (chapterId, patch) => unwrap(remote.chapterUpdate(chapterId, patch)),
-    deleteChapter: chapterId => unwrap(remote.chapterDelete(chapterId)),
-    upsertCharacter: (novelId, input) => unwrap(remote.characterUpsert(novelId, input)),
-    deleteCharacter: characterId => unwrap(remote.characterDelete(characterId)),
-    upsertOutlineEntry: (novelId, input) => unwrap(remote.outlineUpsert(novelId, input)),
-    deleteOutlineEntry: entryId => unwrap(remote.outlineDelete(entryId)),
+    listNovels: () => unwrap(remote().list()),
+    getNovel: novelId => unwrap(remote().detail(novelId)),
+    getChapter: chapterId => unwrap(remote().chapter(chapterId)),
+    createNovel: input => unwrap(remote().create(input)),
+    updateNovel: (novelId, patch) => unwrap(remote().update(novelId, patch)),
+    deleteNovel: novelId => unwrap(remote().delete(novelId)),
+    createChapter: (novelId, input) => unwrap(remote().chapterCreate(novelId, input)),
+    updateChapter: (chapterId, patch) => unwrap(remote().chapterUpdate(chapterId, patch)),
+    deleteChapter: chapterId => unwrap(remote().chapterDelete(chapterId)),
+    upsertCharacter: (novelId, input) => unwrap(remote().characterUpsert(novelId, input)),
+    deleteCharacter: characterId => unwrap(remote().characterDelete(characterId)),
+    upsertOutlineEntry: (novelId, input) => unwrap(remote().outlineUpsert(novelId, input)),
+    deleteOutlineEntry: entryId => unwrap(remote().outlineDelete(entryId)),
   }
 }

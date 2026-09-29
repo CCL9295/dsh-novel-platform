@@ -1,0 +1,7 @@
+# The dsh-novel-platform bundle patch: one row that mounts every half of the
+# plugin. The Host loads `main` (tools, skills, store, Typert controller); the
+# browser module system scans the same row's `dsh.client` declaration and
+# serves `./client` to the Web UI (sidebar entry + writing-desk panel).
+- insert:
+    - id: novel-platform
+      name: dsh-novel-platform

@@ -11,8 +11,11 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
-// Generated Remote namespace declaration merge (novel/* vocabulary).
-import type {} from '@deepseek-ai/dsh-novel-platform/remote'
+// Generated Remote namespace: runtime contribution (mounted below) and the
+// declaration merge for the `novel/*` failure vocabulary. The virtual
+// specifier is resolved to the generated `./remote` artifact by each build
+// (see scripts/build.mjs and the monorepo tsdown config).
+import novelRemote from 'virtual:novel-remote-contribution'
 import { NovelPage } from './NovelPage.tsx'
 import { NovelPanelIcon } from './NovelIcon.tsx'
 import { createNovelFace } from './face.ts'
@@ -33,31 +36,59 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 /** The id shared by the sidebar entry and the main panel it opens. */
 export const PANEL_ID = 'novel' as MainPanelId
 
-/** Services required by the panel, the sidebar entry, and the Remote face. */
-export const inject = ['slots', 'locale', 'remote', 'remote.novel']
+/** Services required by the mount; the panel registration waits for `remote.novel`. */
+export const inject = ['slots', 'locale', 'remote']
 
 /**
- * Contribute the Writing Desk entry to the sidebar with the main panel it
- * opens.
+ * Mount the plugin's own Remote namespace, then contribute the Writing Desk
+ * entry to the sidebar with the main panel it opens.
  * @param ctx - the browser plugin context.
  */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'novel-platform: dictionaries')
-  const t = ctx.locale.bind(NS)
-  const face = createNovelFace(ctx)
+  // Self-mount the generated contribution: a third-party bundle cannot edit
+  // the application's api-remotes facade, and $mount is the Gateway's public
+  // extension seam. The mount is deferred one macrotask past this entry's
+  // activation window: mounting synchronously here makes the Gateway create
+  // the namespace's dynamic plugin fiber inside the boot activation pass,
+  // which deadlocks the initial module composition. A re-materialized entry
+  // (HMR/code reload) may race its own previous mount; the already-mounted
+  // rejection is swallowed and the fresh effect's disposer chain wins.
+  ctx.effect(() => {
+    let dispose: (() => Promise<void>) | undefined
+    const timer = setTimeout(() => {
+      void ctx.remote.$mount(novelRemote).then((d) => { dispose = d }).catch((error: unknown) => {
+        if (!/already mounted/.test(String((error as Error)?.message))) throw error
+      })
+    }, 0)
+    return () => {
+      clearTimeout(timer)
+      void dispose?.()
+    }
+  }, 'novel-platform: mount remote.novel')
 
-  ctx.slots.inject('main', () => ctx.slots.register({
-    name: 'main',
-    key: PANEL_ID,
-    locale: NS,
-    inject: () => face,
-  }, NovelPage))
+  // `remote.novel` is a flat service key: access from a context requires the
+  // inject declaration, so the panel (and its face) are registered from a
+  // child context that waits for the namespace this plugin itself mounts.
+  ctx.inject(['remote.novel'], (child) => {
+    child.effect(function* () {
+      const t = child.locale.bind(NS)
+      const face = createNovelFace(child)
 
-  ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
-    name: 'sidebar.panellist',
-    id: PANEL_ID,
-    order: 90,
-    label: () => t('panel'),
-    locale: NS,
-  }, NovelPanelIcon))
+      yield child.slots.inject('main', () => child.slots.register({
+        name: 'main',
+        key: PANEL_ID,
+        locale: NS,
+        inject: () => face,
+      }, NovelPage))
+
+      yield child.slots.inject('sidebar.panellist', () => child.slots.register({
+        name: 'sidebar.panellist',
+        id: PANEL_ID,
+        order: 90,
+        label: () => t('panel'),
+        locale: NS,
+      }, NovelPanelIcon))
+    }, 'novel-platform: writing-desk slots')
+  })
 }
