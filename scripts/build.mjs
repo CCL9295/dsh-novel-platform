@@ -23,7 +23,7 @@ import { transform } from 'lightningcss'
 import ts from 'typescript'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const PACKAGE_ID = 'dsh-novel-platform'
+const PACKAGE_ID = '@ccl9295/dsh-novel-platform'
 
 /** The platform seed table (packages/client/web/src/platform.ts). Externals resolve there. */
 const PLATFORM_MODULES = [
@@ -166,4 +166,4 @@ await writeFile(
 )
 const hostSize = await buildHost()
 const clientSize = await buildClient()
-console.log(`dsh-novel-platform: built lib/index.js (${hostSize} B) and lib/client.js (${clientSize} B)`)
+console.log(`${PACKAGE_ID}: built lib/index.js (${hostSize} B) and lib/client.js (${clientSize} B)`)

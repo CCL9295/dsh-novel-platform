@@ -1,5 +1,5 @@
 {
-  "name": "dsh-novel-platform",
+  "name": "@ccl9295/dsh-novel-platform",
   "description": "Web novel writing platform for DeepSeek Harness: writing-desk panel, novel_* agent tools, 16 bundled writing skills, and the novel Remote namespace",
   "version": "0.1.0",
   "license": "MIT",
@@ -59,5 +59,8 @@
     "lightningcss": "^1.32.0",
     "rolldown": "^1.0.3",
     "typescript": "^5.9.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

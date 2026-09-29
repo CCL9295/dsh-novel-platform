@@ -15,13 +15,13 @@
 已安装 `dsh` CLI 的用户：
 
 ```sh
-# npm（发布后）：dsh plugin add dsh-novel-platform
-# tarball：dsh plugin add ./dsh-novel-platform-0.1.0.tgz
+# npm（发布后）：dsh plugin add @ccl9295/dsh-novel-platform
+# tarball：dsh plugin add ./ccl9295-dsh-novel-platform-0.1.0.tgz
 # 本地路径：
 dsh plugin --profile <name> add /path/to/dsh-novel-platform
 ```
 
-重启 dsh，侧边栏出现"写作台"。卸载：`dsh plugin --profile <name> remove dsh-novel-platform`。
+重启 dsh，侧边栏出现"写作台"。卸载：`dsh plugin --profile <name> remove @ccl9295/dsh-novel-platform`。
 
 ## 从源码构建
 

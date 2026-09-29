@@ -4,4 +4,4 @@
 # serves `./client` to the Web UI (sidebar entry + writing-desk panel).
 - insert:
     - id: novel-platform
-      name: dsh-novel-platform
+      name: '@ccl9295/dsh-novel-platform'
