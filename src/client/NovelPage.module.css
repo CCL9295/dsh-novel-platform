@@ -347,3 +347,119 @@
   resize: vertical;
   box-sizing: border-box;
 }
+
+/* AI enhance actions: skill-bound toolbar, suggestion preview, outline cards. */
+
+.enhanceBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.enhanceButton {
+  padding: 4px 12px;
+  border: 1px solid var(--dsw-alias-border-subtle);
+  border-radius: var(--dsw-alias-radius-pill);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.enhanceButton:hover:not(:disabled) {
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-state-business-primary);
+}
+
+.enhanceButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.enhanceError {
+  padding: 8px 12px;
+  border-radius: var(--dsw-alias-radius-md);
+  background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent);
+  color: var(--dsw-alias-state-error-primary);
+  font-size: 12px;
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--dsw-alias-state-business-primary) 40%, transparent);
+  border-radius: var(--dsw-alias-radius-md);
+}
+
+.suggestionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.suggestionSpacer {
+  flex: 1;
+}
+
+.suggestionBody {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--dsw-alias-border-subtle);
+  border-radius: var(--dsw-alias-radius-md);
+  background: var(--dsw-alias-surface-primary);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.skillGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.skillCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-subtle);
+  border-radius: var(--dsw-alias-radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.skillCard:hover:not(:disabled) {
+  border-color: var(--dsw-alias-state-business-primary);
+}
+
+.skillCard:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.skillCardTitle {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.skillCardHint {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.skillCardSkill {
+  font-size: 10px;
+  color: var(--dsw-alias-label-tertiary);
+}

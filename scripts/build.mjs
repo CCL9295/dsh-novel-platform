@@ -89,7 +89,7 @@ async function buildClient() {
     // clientBundle preset inlines every `*/remote` wire artifact.
     resolve: {
       alias: {
-        'virtual:novel-remote-contribution': pathToFileURL(join(root, 'lib/typert.remote-client.js')).href,
+        '@deepseek-ai/dsh-novel-platform/remote': pathToFileURL(join(root, 'lib/typert.remote-client.js')).href,
       },
     },
     transform: { ts: { jsx: 'react-jsx' } },

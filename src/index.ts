@@ -15,7 +15,7 @@ import { registerNovelTools } from './tools.ts'
 
 export const name = 'novel-platform'
 
-export const inject = ['tools', 'skills']
+export const inject = ['tools', 'skills', 'llm', 'agentDefaultModel']
 
 /**
  * Provide the store, the Remote controller, the agent tools, and the bundled

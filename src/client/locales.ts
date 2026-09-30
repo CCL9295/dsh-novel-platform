@@ -63,6 +63,8 @@ export const zh = {
   'action.confirm': '确定',
   'action.edit': '编辑',
   'action.saving': '保存中…',
+  'enhance.apply': '采纳',
+  'enhance.copy': '复制',
   'error.generic': '操作失败：{message}',
 } as const
 
@@ -127,6 +129,8 @@ export const en = {
   'action.confirm': 'Confirm',
   'action.edit': 'Edit',
   'action.saving': 'Saving…',
+  'enhance.apply': 'Apply',
+  'enhance.copy': 'Copy',
   'error.generic': 'Action failed: {message}',
 } as const
 

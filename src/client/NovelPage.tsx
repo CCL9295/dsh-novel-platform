@@ -1,7 +1,9 @@
 /**
  * The writing desk: novel list on the left, the selected novel's chapters,
  * character cards, and outline on the right. Data arrives through the
- * NovelFace; the page holds no Remote knowledge.
+ * NovelFace; the page holds no Remote knowledge. Chapter and outline surfaces
+ * offer AI enhance actions — each one runs a bundled (弧光) skill through the
+ * Host's model and presents the suggestion for explicit adoption.
  */
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
@@ -10,8 +12,8 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type { NovelFace } from './face.ts'
 import type { NovelLocaleKey } from './locales.ts'
 import type {
-  ChapterDetail, ChapterRow, CharacterRow, CharacterRole, NovelDetail,
-  NovelRow, NovelStatus, OutlineRow,
+  ChapterDetail, ChapterRow, CharacterRow, CharacterRole, EnhanceActionInfo,
+  EnhanceKind, EnhanceResult, NovelDetail, NovelRow, NovelStatus, OutlineRow,
 } from '@deepseek-ai/dsh-novel-platform/types'
 import css from './NovelPage.module.css'
 
@@ -38,6 +40,7 @@ export function NovelPage(props: NovelPageProps): ReactNode {
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
   const [detail, setDetail] = useState<NovelDetail | undefined>(undefined)
   const [tab, setTab] = useState<'chapters' | 'characters' | 'outline'>('chapters')
+  const [actions, setActions] = useState<readonly EnhanceActionInfo[] | undefined>(undefined)
 
   const loadNovels = useCallback(async (): Promise<void> => {
     try {
@@ -49,6 +52,7 @@ export function NovelPage(props: NovelPageProps): ReactNode {
   }, [face, t])
 
   useEffect(() => { void loadNovels() }, [loadNovels])
+  useEffect(() => { void face.listActions().then(setActions).catch(() => setActions([])) }, [face])
 
   useEffect(() => {
     if (selectedId === undefined) {
@@ -80,6 +84,9 @@ export function NovelPage(props: NovelPageProps): ReactNode {
     if (selectedId !== undefined) setDetail(await face.getNovel(selectedId))
   }
 
+  const actionsFor = (kind: EnhanceKind): readonly EnhanceActionInfo[] =>
+    (actions ?? []).filter(action => action.kind === kind)
+
   return (
     <div className={css.page}>
       <header className={css.header}>
@@ -108,9 +115,27 @@ export function NovelPage(props: NovelPageProps): ReactNode {
                     <TabButton active={tab === 'characters'} onClick={() => setTab('characters')}>{t('tab.characters')}</TabButton>
                     <TabButton active={tab === 'outline'} onClick={() => setTab('outline')}>{t('tab.outline')}</TabButton>
                   </nav>
-                  {tab === 'chapters' && <ChaptersTab novelId={detail.novel.novelId} chapters={detail.chapters} face={face} t={t} onChanged={refreshDetail} />}
+                  {tab === 'chapters' && (
+                    <ChaptersTab
+                      novelId={detail.novel.novelId}
+                      chapters={detail.chapters}
+                      face={face}
+                      t={t}
+                      onChanged={refreshDetail}
+                      chapterActions={actionsFor('chapter')}
+                    />
+                  )}
                   {tab === 'characters' && <CharactersTab novelId={detail.novel.novelId} characters={detail.characters} face={face} t={t} onChanged={refreshDetail} />}
-                  {tab === 'outline' && <OutlineTab novelId={detail.novel.novelId} outline={detail.outline} face={face} t={t} onChanged={refreshDetail} />}
+                  {tab === 'outline' && (
+                    <OutlineTab
+                      novelId={detail.novel.novelId}
+                      outline={detail.outline}
+                      face={face}
+                      t={t}
+                      onChanged={refreshDetail}
+                      outlineActions={actionsFor('outline')}
+                    />
+                  )}
                 </>
               )}
         </section>
@@ -244,20 +269,96 @@ function TabButton(props: { active: boolean; onClick: () => void; children: Reac
   )
 }
 
+/** AI suggestion preview: never auto-applied; the writer adopts or discards. */
+function SuggestionPanel(props: {
+  result: EnhanceResult
+  /** Present only for actions whose output can replace the target text. */
+  onApply: (() => Promise<void>) | undefined
+  applyLabel: string
+  onClose: () => void
+  t: Translate
+}): ReactNode {
+  const { result, onApply, applyLabel, onClose, t } = props
+  const [applying, setApplying] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const apply = async (): Promise<void> => {
+    if (onApply === undefined) return
+    setApplying(true)
+    try {
+      await onApply()
+      onClose()
+    } finally {
+      setApplying(false)
+    }
+  }
+  const copy = async (): Promise<void> => {
+    await navigator.clipboard.writeText(result.suggestion)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+  return (
+    <div className={css.suggestion}>
+      <div className={css.suggestionHeader}>
+        <strong>{result.label}</strong>
+        <span className={css.tag}>{result.skill}</span>
+        <span className={css.suggestionSpacer} />
+        {onApply !== undefined && (
+          <Button size="sm" disabled={applying} onClick={() => { void apply() }}>
+            {applying ? t('action.saving') : applyLabel}
+          </Button>
+        )}
+        <Button size="sm" variant="outline" onClick={() => { void copy() }}>{copied ? '✓' : t('enhance.copy')}</Button>
+        <Button size="sm" variant="outline" onClick={onClose}>{t('action.cancel')}</Button>
+      </div>
+      <textarea className={css.suggestionBody} readOnly value={result.suggestion} rows={12} />
+    </div>
+  )
+}
+
+/** The chapter-surface AI toolbar: one button per bundled skill action. */
+function EnhanceBar(props: {
+  actions: readonly EnhanceActionInfo[]
+  runningId: string | undefined
+  onRun: (action: EnhanceActionInfo) => void
+}): ReactNode {
+  const { actions, runningId, onRun } = props
+  if (actions.length === 0) return null
+  return (
+    <div className={css.enhanceBar}>
+      {actions.map(action => (
+        <button
+          key={action.actionId}
+          type="button"
+          className={css.enhanceButton}
+          title={`${action.hint}（${action.skill}）`}
+          disabled={runningId !== undefined}
+          onClick={() => onRun(action)}
+        >
+          {runningId === action.actionId ? '…' : action.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function ChaptersTab(props: {
   novelId: string
   chapters: readonly ChapterRow[]
   face: NovelFace
   t: Translate
   onChanged: () => Promise<void>
+  chapterActions: readonly EnhanceActionInfo[]
 }): ReactNode {
-  const { novelId, chapters, face, t, onChanged } = props
+  const { novelId, chapters, face, t, onChanged, chapterActions } = props
   const [chapterId, setChapterId] = useState<string | undefined>(undefined)
   const [chapter, setChapter] = useState<ChapterDetail | undefined>(undefined)
   const [draftTitle, setDraftTitle] = useState('')
   const [draftContent, setDraftContent] = useState('')
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [runningAction, setRunningAction] = useState<string | undefined>(undefined)
+  const [enhanceError, setEnhanceError] = useState<string | undefined>(undefined)
+  const [result, setResult] = useState<EnhanceResult | undefined>(undefined)
 
   useEffect(() => {
     if (chapterId === undefined) {
@@ -305,6 +406,25 @@ function ChaptersTab(props: {
     await onChanged()
   }
 
+  const runEnhance = async (action: EnhanceActionInfo): Promise<void> => {
+    if (chapterId === undefined) return
+    setRunningAction(action.actionId)
+    setEnhanceError(undefined)
+    setResult(undefined)
+    try {
+      // The toolbar operates on the saved text: unsaved edits are persisted first.
+      if (dirty) {
+        await face.updateChapter(chapterId, { title: draftTitle, content: draftContent })
+        setDirty(false)
+      }
+      setResult(await face.enhance('chapter', chapterId, action.actionId))
+    } catch (cause: unknown) {
+      setEnhanceError(String((cause as Error).message))
+    } finally {
+      setRunningAction(undefined)
+    }
+  }
+
   return (
     <div className={css.split}>
       <div className={css.subList}>
@@ -348,6 +468,27 @@ function ChaptersTab(props: {
           : (
               <>
                 <Input value={draftTitle} onChange={(event) => { setDraftTitle(event.target.value); setDirty(true) }} />
+                <EnhanceBar
+                  actions={chapterActions}
+                  runningId={runningAction}
+                  onRun={action => { void runEnhance(action) }}
+                />
+                {enhanceError !== undefined && <div className={css.enhanceError}>{enhanceError}</div>}
+                {result !== undefined && result.kind === 'chapter' && (
+                  <SuggestionPanel
+                    result={result}
+                    t={t}
+                    onClose={() => setResult(undefined)}
+                    applyLabel={t('enhance.apply')}
+                    onApply={result.actionId === 'chapter-review'
+                      ? undefined
+                      : async () => {
+                        await face.updateChapter(chapter.chapterId, { content: result.suggestion })
+                        setDraftContent(result.suggestion)
+                        await onChanged()
+                      }}
+                  />
+                )}
                 <textarea
                   className={css.editorArea}
                   value={draftContent}
@@ -453,12 +594,16 @@ function OutlineTab(props: {
   face: NovelFace
   t: Translate
   onChanged: () => Promise<void>
+  outlineActions: readonly EnhanceActionInfo[]
 }): ReactNode {
-  const { novelId, outline, face, t, onChanged } = props
+  const { novelId, outline, face, t, onChanged, outlineActions } = props
   const sorted = outline.slice().sort((left, right) => left.order - right.order)
   const [order, setOrder] = useState(String(sorted.length + 1))
   const [volume, setVolume] = useState('')
   const [summary, setSummary] = useState('')
+  const [runningAction, setRunningAction] = useState<string | undefined>(undefined)
+  const [enhanceError, setEnhanceError] = useState<string | undefined>(undefined)
+  const [result, setResult] = useState<EnhanceResult | undefined>(undefined)
 
   const save = async (): Promise<void> => {
     const parsedOrder = Number.parseInt(order, 10)
@@ -468,6 +613,19 @@ function OutlineTab(props: {
     setSummary('')
     setOrder(String(Math.max(parsedOrder + 1, sorted.length + 1)))
     await onChanged()
+  }
+
+  const runEnhance = async (action: EnhanceActionInfo): Promise<void> => {
+    setRunningAction(action.actionId)
+    setEnhanceError(undefined)
+    setResult(undefined)
+    try {
+      setResult(await face.enhance('outline', novelId, action.actionId))
+    } catch (cause: unknown) {
+      setEnhanceError(String((cause as Error).message))
+    } finally {
+      setRunningAction(undefined)
+    }
   }
 
   return (
@@ -491,6 +649,31 @@ function OutlineTab(props: {
           </li>
         ))}
       </ul>
+      {result !== undefined && result.kind === 'outline' && (
+        <SuggestionPanel
+          result={result}
+          t={t}
+          onClose={() => setResult(undefined)}
+          applyLabel={t('enhance.apply')}
+          onApply={undefined}
+        />
+      )}
+      {enhanceError !== undefined && <div className={css.enhanceError}>{enhanceError}</div>}
+      <div className={css.skillGrid}>
+        {outlineActions.map(action => (
+          <button
+            key={action.actionId}
+            type="button"
+            className={css.skillCard}
+            disabled={runningAction !== undefined}
+            onClick={() => { void runEnhance(action) }}
+          >
+            <span className={css.skillCardTitle}>{runningAction === action.actionId ? '…' : action.label}</span>
+            <span className={css.skillCardHint}>{action.hint}</span>
+            <span className={css.skillCardSkill}>{action.skill}</span>
+          </button>
+        ))}
+      </div>
       <form className={css.stack} onSubmit={(event) => { event.preventDefault(); void save() }}>
         <div className={css.row}>
           <Input value={order} onChange={event => setOrder(event.target.value)} placeholder={t('outline.orderLabel')} />

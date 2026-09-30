@@ -115,3 +115,26 @@ export interface OutlineUpsertInput {
   readonly volume: string
   readonly summary: string
 }
+
+/** Which surface an AI enhance action operates on. */
+export type EnhanceKind = 'chapter' | 'outline'
+
+/** One AI enhance action the writing desk offers, bound to a bundled skill. */
+export interface EnhanceActionInfo {
+  readonly actionId: string
+  readonly kind: EnhanceKind
+  readonly label: string
+  /** The bundled (弧光) skill whose instructions steer the model. */
+  readonly skill: string
+  /** One-line "what this does here" shown on the button/card. */
+  readonly hint: string
+}
+
+/** Model output for one enhance action; never auto-applied. */
+export interface EnhanceResult {
+  readonly actionId: string
+  readonly kind: EnhanceKind
+  readonly label: string
+  readonly skill: string
+  readonly suggestion: string
+}

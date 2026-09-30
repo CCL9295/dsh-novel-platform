@@ -8,7 +8,8 @@ import type { Context as ClientContext } from '@deepseek-ai/cordis'
 // Wire vocabulary comes from the package's client-safe types export (built by the host face).
 import type {
   ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
-  ChapterCreateInput, NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
+  ChapterCreateInput, EnhanceActionInfo, EnhanceKind, EnhanceResult,
+  NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
   OutlineRow, OutlineUpsertInput,
 } from '@deepseek-ai/dsh-novel-platform/types'
 
@@ -45,6 +46,8 @@ export interface NovelFace {
   readonly deleteCharacter: (characterId: string) => Promise<void>
   readonly upsertOutlineEntry: (novelId: string, input: OutlineUpsertInput) => Promise<OutlineRow>
   readonly deleteOutlineEntry: (entryId: string) => Promise<void>
+  readonly listActions: () => Promise<EnhanceActionInfo[]>
+  readonly enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<EnhanceResult>
 }
 
 /**
@@ -70,5 +73,7 @@ export function createNovelFace(ctx: ClientContext): NovelFace {
     deleteCharacter: characterId => unwrap(remote().characterDelete(characterId)),
     upsertOutlineEntry: (novelId, input) => unwrap(remote().outlineUpsert(novelId, input)),
     deleteOutlineEntry: entryId => unwrap(remote().outlineDelete(entryId)),
+    listActions: () => unwrap(remote().actions()),
+    enhance: (kind, targetId, actionId) => unwrap(remote().enhance(kind, targetId, actionId)),
   }
 }

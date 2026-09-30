@@ -12,10 +12,11 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 // Generated Remote namespace: runtime contribution (mounted below) and the
-// declaration merge for the `novel/*` failure vocabulary. The virtual
-// specifier is resolved to the generated `./remote` artifact by each build
-// (see scripts/build.mjs and the monorepo tsdown config).
-import novelRemote from 'virtual:novel-remote-contribution'
+// declaration merge for the `novel/*` failure vocabulary. The monorepo build
+// inlines the self-referenced `*/remote` artifact (GENERATED_REMOTE); the
+// standalone build aliases the same specifier to its committed artifact
+// (scripts/build.mjs).
+import novelRemote from '@deepseek-ai/dsh-novel-platform/remote'
 import { NovelPage } from './NovelPage.tsx'
 import { NovelPanelIcon } from './NovelIcon.tsx'
 import { createNovelFace } from './face.ts'

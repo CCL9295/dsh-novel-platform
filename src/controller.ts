@@ -13,10 +13,12 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type {
   ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
-  ChapterCreateInput, NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
+  ChapterCreateInput, EnhanceActionInfo, EnhanceKind, EnhanceResult,
+  NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
   OutlineRow, OutlineUpsertInput,
 } from './types.ts'
 import type { NovelStoreService } from './store.ts'
+import { enhance, listActions } from './enhance.ts'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface RemoteErrorDetailsMap {
@@ -30,6 +32,10 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'novel/outline-not-found': { readonly entryId: string }
     /** The store refused an otherwise valid write. */
     'novel/rejected': { readonly reason: string }
+    /** No enhance action carries that id. */
+    'novel/action-not-found': { readonly actionId: string }
+    /** The deployment has no usable default model selection. */
+    'novel/no-model': { readonly reason: string }
   }
 }
 
@@ -183,6 +189,22 @@ export class NovelController extends TypertRemoteService {
   async deleteOutlineEntry(entryId: string): Promise<void> {
     try {
       await this.store.deleteOutlineEntry(entryId)
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  /** List the AI enhance actions the desk offers, with their bundled skills. */
+  @Remote('actions')
+  listActions(): EnhanceActionInfo[] {
+    return listActions()
+  }
+
+  /** Run one skill-steered enhance action; returns a suggestion, never applies it. */
+  @Remote('enhance')
+  async enhance(kind: EnhanceKind, targetId: string, actionId: string): Promise<EnhanceResult> {
+    try {
+      return await enhance(this.ctx, this.store, kind, targetId, actionId)
     } catch (error: unknown) {
       throw domainError(error)
     }

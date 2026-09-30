@@ -3,10 +3,11 @@ import type {
   RemoteResult,
   TypertRemoteContribution,
 } from '@deepseek-ai/dsh-typert-protocol'
-import type { ChapterCreateInput, ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput, NovelCreateInput, NovelDetail, NovelPatch, NovelRow, OutlineRow, OutlineUpsertInput } from '@deepseek-ai/dsh-novel-platform/types'
+import type { ChapterCreateInput, ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput, EnhanceActionInfo, EnhanceKind, EnhanceResult, NovelCreateInput, NovelDetail, NovelPatch, NovelRow, OutlineRow, OutlineUpsertInput } from '@deepseek-ai/dsh-novel-platform/types'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$6e6f76656c {
+    actions: () => Promise<RemoteResult<EnhanceActionInfo[]>>
     chapter: (chapterId: string) => Promise<RemoteResult<ChapterDetail>>
     chapterCreate: (novelId: string, input: ChapterCreateInput) => Promise<RemoteResult<ChapterRow>>
     chapterDelete: (chapterId: string) => Promise<RemoteResult<void>>
@@ -16,12 +17,14 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     create: (input: NovelCreateInput) => Promise<RemoteResult<NovelRow>>
     delete: (novelId: string) => Promise<RemoteResult<void>>
     detail: (novelId: string) => Promise<RemoteResult<NovelDetail>>
+    enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
     list: () => Promise<RemoteResult<NovelRow[]>>
     outlineDelete: (entryId: string) => Promise<RemoteResult<void>>
     outlineUpsert: (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
     update: (novelId: string, patch: NovelPatch) => Promise<RemoteResult<NovelRow>>
   }
   interface TypertRemoteMap {
+    'novel/actions': () => Promise<RemoteResult<EnhanceActionInfo[]>>
     'novel/chapter': (chapterId: string) => Promise<RemoteResult<ChapterDetail>>
     'novel/chapterCreate': (novelId: string, input: ChapterCreateInput) => Promise<RemoteResult<ChapterRow>>
     'novel/chapterDelete': (chapterId: string) => Promise<RemoteResult<void>>
@@ -31,6 +34,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'novel/create': (input: NovelCreateInput) => Promise<RemoteResult<NovelRow>>
     'novel/delete': (novelId: string) => Promise<RemoteResult<void>>
     'novel/detail': (novelId: string) => Promise<RemoteResult<NovelDetail>>
+    'novel/enhance': (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
     'novel/list': () => Promise<RemoteResult<NovelRow[]>>
     'novel/outlineDelete': (entryId: string) => Promise<RemoteResult<void>>
     'novel/outlineUpsert': (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
