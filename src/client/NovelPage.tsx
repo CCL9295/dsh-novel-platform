@@ -12,9 +12,10 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type { NovelFace } from './face.ts'
 import type { NovelLocaleKey } from './locales.ts'
 import type {
-  ChapterDetail, ChapterRow, CharacterRow, CharacterRole, EnhanceActionInfo,
+  ChapterDetail, ChapterRow, EnhanceActionInfo,
   EnhanceKind, EnhanceResult, NovelDetail, NovelRow, NovelStatus, OutlineRow,
 } from '@deepseek-ai/dsh-novel-platform/types'
+import { SettingsTab } from './SettingsTab.tsx'
 import css from './NovelPage.module.css'
 
 /** Full component props assembled by the main slot renderer. */
@@ -27,7 +28,6 @@ type Translate = (key: NovelLocaleKey, params?: Record<string, string | number>)
 
 const NOVEL_STATUSES: readonly NovelStatus[] = ['draft', 'serializing', 'finished']
 const CHAPTER_STATUSES = ['outline', 'draft', 'revised', 'published'] as const
-const CHARACTER_ROLES: readonly CharacterRole[] = ['protagonist', 'supporting', 'antagonist', 'minor']
 
 /** Root writing-desk panel. */
 export function NovelPage(props: NovelPageProps): ReactNode {
@@ -125,7 +125,15 @@ export function NovelPage(props: NovelPageProps): ReactNode {
                       chapterActions={actionsFor('chapter')}
                     />
                   )}
-                  {tab === 'characters' && <CharactersTab novelId={detail.novel.novelId} characters={detail.characters} face={face} t={t} onChanged={refreshDetail} />}
+                  {tab === 'characters' && (
+                    <SettingsTab
+                      novelId={detail.novel.novelId}
+                      detail={detail}
+                      face={face}
+                      t={t}
+                      onChanged={refreshDetail}
+                    />
+                  )}
                   {tab === 'outline' && (
                     <OutlineTab
                       novelId={detail.novel.novelId}
@@ -518,72 +526,6 @@ function ChaptersTab(props: {
               </>
             )}
       </div>
-    </div>
-  )
-}
-
-function CharactersTab(props: {
-  novelId: string
-  characters: readonly CharacterRow[]
-  face: NovelFace
-  t: Translate
-  onChanged: () => Promise<void>
-}): ReactNode {
-  const { novelId, characters, face, t, onChanged } = props
-  const [name, setName] = useState('')
-  const [role, setRole] = useState<CharacterRole>('protagonist')
-  const [profile, setProfile] = useState('')
-
-  const save = async (): Promise<void> => {
-    if (name.trim().length === 0) return
-    await face.upsertCharacter(novelId, { name: name.trim(), role, profile })
-    setName('')
-    setProfile('')
-    await onChanged()
-  }
-
-  return (
-    <div className={css.tabBody}>
-      {characters.length === 0 && <div className={css.placeholder}>{t('characters.empty')}</div>}
-      <ul className={css.cardList}>
-        {characters.map(character => (
-          <li key={character.characterId} className={css.card}>
-            <div className={css.cardHeader}>
-              <strong>{character.name}</strong>
-              <span className={css.tag}>{t(`characters.role.${character.role}` as NovelLocaleKey)}</span>
-              <button
-                type="button"
-                className={css.iconButton}
-                aria-label={t('characters.delete')}
-                onClick={() => { void face.deleteCharacter(character.characterId).then(onChanged) }}
-              >
-                ×
-              </button>
-            </div>
-            <p className={css.cardBody}>{character.profile}</p>
-          </li>
-        ))}
-      </ul>
-      <form className={css.stack} onSubmit={(event) => { event.preventDefault(); void save() }}>
-        <div className={css.row}>
-          <Input value={name} onChange={event => setName(event.target.value)} placeholder={t('characters.nameLabel')} />
-          <select className={css.select} value={role} onChange={event => setRole(event.target.value as CharacterRole)}>
-            {CHARACTER_ROLES.map(candidate => (
-              <option key={candidate} value={candidate}>{t(`characters.role.${candidate}` as NovelLocaleKey)}</option>
-            ))}
-          </select>
-        </div>
-        <textarea
-          className={css.textarea}
-          value={profile}
-          onChange={event => setProfile(event.target.value)}
-          placeholder={t('characters.profilePlaceholder')}
-          rows={4}
-        />
-        <div>
-          <Button size="sm" onClick={() => { void save() }}>{t('characters.save')}</Button>
-        </div>
-      </form>
     </div>
   )
 }

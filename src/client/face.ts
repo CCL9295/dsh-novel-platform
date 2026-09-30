@@ -5,12 +5,13 @@
  */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 // Wire vocabulary comes from the package's client-safe types export (built by the host face).
 import type {
   ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
   ChapterCreateInput, EnhanceActionInfo, EnhanceKind, EnhanceResult,
   NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
-  OutlineRow, OutlineUpsertInput,
+  OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput,
 } from '@deepseek-ai/dsh-novel-platform/types'
 
 /** Remote failure carrying its wire code, for code-aware UI decisions. */
@@ -31,6 +32,33 @@ async function unwrap<T>(call: Promise<{ ok: true; value: T } | { ok: false; err
   return result.value
 }
 
+/**
+ * The `remote.novel` namespace surface, written out explicitly instead of
+ * relying on the generated declaration merge — the face is the deliberate
+ * hand-maintained projection layer between the wire and the page.
+ */
+interface NovelNamespace {
+  list: () => Promise<RemoteResult<NovelRow[]>>
+  detail: (novelId: string) => Promise<RemoteResult<NovelDetail>>
+  chapter: (chapterId: string) => Promise<RemoteResult<ChapterDetail>>
+  create: (input: NovelCreateInput) => Promise<RemoteResult<NovelRow>>
+  update: (novelId: string, patch: NovelPatch) => Promise<RemoteResult<NovelRow>>
+  delete: (novelId: string) => Promise<RemoteResult<void>>
+  chapterCreate: (novelId: string, input: ChapterCreateInput) => Promise<RemoteResult<ChapterRow>>
+  chapterUpdate: (chapterId: string, patch: ChapterPatch) => Promise<RemoteResult<ChapterRow>>
+  chapterDelete: (chapterId: string) => Promise<RemoteResult<void>>
+  characterUpsert: (novelId: string, input: CharacterUpsertInput) => Promise<RemoteResult<CharacterRow>>
+  characterDelete: (characterId: string) => Promise<RemoteResult<void>>
+  outlineUpsert: (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
+  outlineDelete: (entryId: string) => Promise<RemoteResult<void>>
+  actions: () => Promise<RemoteResult<EnhanceActionInfo[]>>
+  enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
+  guideSteps: () => Promise<RemoteResult<readonly { stepId: string; order: number; label: string; skill: string; category: string; title: string; question: string }[]>>
+  guideDraft: (novelId: string, stepId: string, userNote: string) => Promise<RemoteResult<EnhanceResult>>
+  worldUpsert: (novelId: string, input: WorldUpsertInput) => Promise<RemoteResult<WorldEntry>>
+  worldDelete: (entryId: string) => Promise<RemoteResult<void>>
+}
+
 /** The browser face the writing-desk page consumes. */
 export interface NovelFace {
   readonly listNovels: () => Promise<NovelRow[]>
@@ -48,6 +76,10 @@ export interface NovelFace {
   readonly deleteOutlineEntry: (entryId: string) => Promise<void>
   readonly listActions: () => Promise<EnhanceActionInfo[]>
   readonly enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<EnhanceResult>
+  readonly guideSteps: () => Promise<readonly { stepId: string; order: number; label: string; skill: string; category: string; title: string; question: string }[]>
+  readonly guideDraft: (novelId: string, stepId: string, userNote: string) => Promise<EnhanceResult>
+  readonly upsertWorldEntry: (novelId: string, input: WorldUpsertInput) => Promise<WorldEntry>
+  readonly deleteWorldEntry: (entryId: string) => Promise<void>
 }
 
 /**
@@ -58,7 +90,7 @@ export interface NovelFace {
  * @returns the writing-desk data face.
  */
 export function createNovelFace(ctx: ClientContext): NovelFace {
-  const remote = (): ClientContext['remote']['novel'] => ctx.remote.novel
+  const remote = (): NovelNamespace => ctx.remote.novel as unknown as NovelNamespace
   return {
     listNovels: () => unwrap(remote().list()),
     getNovel: novelId => unwrap(remote().detail(novelId)),
@@ -75,5 +107,9 @@ export function createNovelFace(ctx: ClientContext): NovelFace {
     deleteOutlineEntry: entryId => unwrap(remote().outlineDelete(entryId)),
     listActions: () => unwrap(remote().actions()),
     enhance: (kind, targetId, actionId) => unwrap(remote().enhance(kind, targetId, actionId)),
+    guideSteps: () => unwrap(remote().guideSteps()),
+    guideDraft: (novelId, stepId, userNote) => unwrap(remote().guideDraft(novelId, stepId, userNote)),
+    upsertWorldEntry: (novelId, input) => unwrap(remote().worldUpsert(novelId, input)),
+    deleteWorldEntry: entryId => unwrap(remote().worldDelete(entryId)),
   }
 }

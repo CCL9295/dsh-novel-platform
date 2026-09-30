@@ -15,10 +15,10 @@ import type {
   ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
   ChapterCreateInput, EnhanceActionInfo, EnhanceKind, EnhanceResult,
   NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
-  OutlineRow, OutlineUpsertInput,
+  OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput, GuideStepInfo,
 } from './types.ts'
 import type { NovelStoreService } from './store.ts'
-import { enhance, listActions } from './enhance.ts'
+import { enhance, guideDraft, listActions, GUIDE_STEPS } from './enhance.ts'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface RemoteErrorDetailsMap {
@@ -36,6 +36,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'novel/action-not-found': { readonly actionId: string }
     /** The deployment has no usable default model selection. */
     'novel/no-model': { readonly reason: string }
+    /** No guide step carries that id. */
+    'novel/step-not-found': { readonly stepId: string }
   }
 }
 
@@ -205,6 +207,42 @@ export class NovelController extends TypertRemoteService {
   async enhance(kind: EnhanceKind, targetId: string, actionId: string): Promise<EnhanceResult> {
     try {
       return await enhance(this.ctx, this.store, kind, targetId, actionId)
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  /** The worldbuilding wizard's ordered steps. */
+  @Remote('guideSteps')
+  guideSteps(): readonly GuideStepInfo[] {
+    return GUIDE_STEPS
+  }
+
+  /** Draft one wizard step with the bound skill and the settings gathered so far. */
+  @Remote('guideDraft')
+  async guideDraft(novelId: string, stepId: string, userNote: string): Promise<EnhanceResult> {
+    try {
+      return await guideDraft(this.ctx, this.store, novelId, stepId, userNote)
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  /** Insert or update one world setting entry. */
+  @Remote('worldUpsert')
+  async upsertWorldEntry(novelId: string, input: WorldUpsertInput): Promise<WorldEntry> {
+    try {
+      return await this.store.upsertWorldEntry(novelId, input)
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  /** Delete one world setting entry. */
+  @Remote('worldDelete')
+  async deleteWorldEntry(entryId: string): Promise<void> {
+    try {
+      await this.store.deleteWorldEntry(entryId)
     } catch (error: unknown) {
       throw domainError(error)
     }

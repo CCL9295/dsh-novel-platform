@@ -3,7 +3,7 @@ import type {
   RemoteResult,
   TypertRemoteContribution,
 } from '@deepseek-ai/dsh-typert-protocol'
-import type { ChapterCreateInput, ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput, EnhanceActionInfo, EnhanceKind, EnhanceResult, NovelCreateInput, NovelDetail, NovelPatch, NovelRow, OutlineRow, OutlineUpsertInput } from '@deepseek-ai/dsh-novel-platform/types'
+import type { ChapterCreateInput, ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput, EnhanceActionInfo, EnhanceKind, EnhanceResult, GuideStepInfo, NovelCreateInput, NovelDetail, NovelPatch, NovelRow, OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput } from '@deepseek-ai/dsh-novel-platform/types'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$6e6f76656c {
@@ -18,10 +18,14 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     delete: (novelId: string) => Promise<RemoteResult<void>>
     detail: (novelId: string) => Promise<RemoteResult<NovelDetail>>
     enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
+    guideDraft: (novelId: string, stepId: string, userNote: string) => Promise<RemoteResult<EnhanceResult>>
+    guideSteps: () => Promise<RemoteResult<readonly GuideStepInfo[]>>
     list: () => Promise<RemoteResult<NovelRow[]>>
     outlineDelete: (entryId: string) => Promise<RemoteResult<void>>
     outlineUpsert: (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
     update: (novelId: string, patch: NovelPatch) => Promise<RemoteResult<NovelRow>>
+    worldDelete: (entryId: string) => Promise<RemoteResult<void>>
+    worldUpsert: (novelId: string, input: WorldUpsertInput) => Promise<RemoteResult<WorldEntry>>
   }
   interface TypertRemoteMap {
     'novel/actions': () => Promise<RemoteResult<EnhanceActionInfo[]>>
@@ -35,10 +39,14 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'novel/delete': (novelId: string) => Promise<RemoteResult<void>>
     'novel/detail': (novelId: string) => Promise<RemoteResult<NovelDetail>>
     'novel/enhance': (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
+    'novel/guideDraft': (novelId: string, stepId: string, userNote: string) => Promise<RemoteResult<EnhanceResult>>
+    'novel/guideSteps': () => Promise<RemoteResult<readonly GuideStepInfo[]>>
     'novel/list': () => Promise<RemoteResult<NovelRow[]>>
     'novel/outlineDelete': (entryId: string) => Promise<RemoteResult<void>>
     'novel/outlineUpsert': (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
     'novel/update': (novelId: string, patch: NovelPatch) => Promise<RemoteResult<NovelRow>>
+    'novel/worldDelete': (entryId: string) => Promise<RemoteResult<void>>
+    'novel/worldUpsert': (novelId: string, input: WorldUpsertInput) => Promise<RemoteResult<WorldEntry>>
   }
   interface TypertRemoteNamespaceMap {
     'novel': TypertRemoteNamespace$6e6f76656c

@@ -19,7 +19,7 @@ import { dshHomePath } from '@deepseek-ai/dsh-home-paths'
 import type {
   ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
   ChapterCreateInput, NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
-  OutlineRow, OutlineUpsertInput,
+  OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput,
 } from './types.ts'
 
 /** Storage shape of one novel document. */
@@ -28,6 +28,7 @@ interface NovelDocument {
   chapters: StoredChapter[]
   characters: CharacterRow[]
   outline: OutlineRow[]
+  world: WorldEntry[]
 }
 
 /** Stored chapter: the row plus its body. */
@@ -43,6 +44,7 @@ function isNovelDocument(value: unknown): value is NovelDocument {
     && Array.isArray(document.chapters)
     && Array.isArray(document.characters)
     && Array.isArray(document.outline)
+    && (document.world === undefined || Array.isArray(document.world))
 }
 
 /** Count CJK characters individually and ASCII words as one token each. */
@@ -182,7 +184,7 @@ export class NovelStoreService extends Service {
         createdAt: now,
         updatedAt: now,
       }
-      await this.writeNovel({ novel, chapters: [], characters: [], outline: [] })
+      await this.writeNovel({ novel, chapters: [], characters: [], outline: [], world: [] })
       await this.writeIndex([...await this.readIndex(), novel])
       return novel
     })
@@ -361,6 +363,50 @@ export class NovelStoreService extends Service {
     })
   }
 
+  /** Insert or update a world entry keyed by (category, title). */
+  async upsertWorldEntry(novelId: string, input: WorldUpsertInput): Promise<WorldEntry> {
+    return await this.enqueue(async () => {
+      const document = await this.readNovel(novelId)
+      const now = new Date().toISOString()
+      const world = document.world ?? []
+      const existing = world.find(candidate => candidate.category === input.category && candidate.title === input.title)
+      if (existing !== undefined) {
+        const entry: WorldEntry = { ...existing, content: input.content, updatedAt: now }
+        await this.writeNovel({
+          ...document,
+          world: world.map(candidate => candidate.entryId === existing.entryId ? entry : candidate),
+        })
+        return entry
+      }
+      const entry: WorldEntry = {
+        entryId: randomId('world'),
+        novelId,
+        category: input.category,
+        title: input.title,
+        content: input.content,
+        updatedAt: now,
+      }
+      await this.writeNovel({ ...document, world: [...world, entry] })
+      await this.touchNovel(novelId)
+      return entry
+    })
+  }
+
+  /** Delete one world entry by id. */
+  async deleteWorldEntry(entryId: string): Promise<void> {
+    await this.enqueue(async () => {
+      for (const novelId of await this.novelIds()) {
+        const document = await this.tryReadNovel(novelId)
+        const world = document?.world
+        if (document === undefined || world === undefined || !world.some(candidate => candidate.entryId === entryId)) continue
+        await this.writeNovel({ ...document, world: world.filter(candidate => candidate.entryId !== entryId) })
+        await this.touchNovel(novelId)
+        return
+      }
+      throw new Error(`world entry "${entryId}" does not exist`)
+    })
+  }
+
   /** Bump the novel's updatedAt after any nested mutation. */
   private async touchNovel(novelId: string): Promise<void> {
     const document = await this.tryReadNovel(novelId)
@@ -441,6 +487,7 @@ function toDetail(document: NovelDocument): NovelDetail {
     chapters: document.chapters.map(withoutContent),
     characters: document.characters,
     outline: document.outline,
+    world: document.world ?? [],
   }
 }
 

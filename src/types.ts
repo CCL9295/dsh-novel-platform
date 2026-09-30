@@ -71,6 +71,7 @@ export interface NovelDetail {
   readonly chapters: readonly ChapterRow[]
   readonly characters: readonly CharacterRow[]
   readonly outline: readonly OutlineRow[]
+  readonly world: readonly WorldEntry[]
 }
 
 /** Creation input for a novel. */
@@ -137,4 +138,37 @@ export interface EnhanceResult {
   readonly label: string
   readonly skill: string
   readonly suggestion: string
+}
+
+/** Worldbuilding entry categories, in wizard order. */
+export type WorldCategory = 'premise' | 'power' | 'geography' | 'faction' | 'rule' | 'history' | 'character' | 'other'
+
+/** One worldbuilding entry in the novel's setting bible. */
+export interface WorldEntry {
+  readonly entryId: string
+  readonly novelId: string
+  readonly category: WorldCategory
+  readonly title: string
+  readonly content: string
+  readonly updatedAt: string
+}
+
+/** Upsert input for a world entry (identity = novel + category + title). */
+export interface WorldUpsertInput {
+  readonly category: WorldCategory
+  readonly title: string
+  readonly content: string
+}
+
+/** The worldbuilding wizard: ordered steps, each bound to a skill and its guiding question. */
+export interface GuideStepInfo {
+  readonly stepId: string
+  readonly order: number
+  readonly label: string
+  /** The bundled (弧光) skill steering this step's draft. */
+  readonly skill: string
+  readonly category: WorldCategory
+  readonly title: string
+  /** The guiding question shown to the writer for this step. */
+  readonly question: string
 }
