@@ -20,6 +20,7 @@ import type {
   ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
   ChapterCreateInput, NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
   OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput,
+  Breakdown, BreakdownReport, CustomModel, Memo, MemoFolder,
 } from './types.ts'
 
 /** Storage shape of one novel document. */
@@ -62,9 +63,16 @@ export class NovelStoreService extends Service {
   private readonly root: string
   private queue: Promise<unknown> = Promise.resolve()
 
+  private readonly memosPath: string
+  private readonly breakdownsPath: string
+  private readonly modelsPath: string
+
   constructor(ctx: Context) {
     super(ctx, 'novelStore')
     this.root = dshHomePath('novel-platform', 'novels')
+    this.memosPath = dshHomePath('novel-platform', 'memos.json')
+    this.breakdownsPath = dshHomePath('novel-platform', 'breakdowns.json')
+    this.modelsPath = dshHomePath('novel-platform', 'models.json')
   }
 
   /** Serialize a mutation onto the store queue; callers receive the typed promise. */
@@ -180,6 +188,7 @@ export class NovelStoreService extends Service {
         title: input.title,
         genre: input.genre,
         description: input.description,
+        form: input.form ?? 'long',
         status: 'draft',
         createdAt: now,
         updatedAt: now,
@@ -407,6 +416,242 @@ export class NovelStoreService extends Service {
     })
   }
 
+  // == Memos: one document for folders and notes; scope is 'global' or a novelId. ==
+
+  private async readMemoDoc(): Promise<{ folders: MemoFolder[]; memos: Memo[] }> {
+    try {
+      const raw = await readFile(this.memosPath, 'utf8')
+      const parsed: unknown = JSON.parse(raw)
+      if (typeof parsed === 'object' && parsed !== null
+        && Array.isArray((parsed as { folders?: unknown }).folders)
+        && Array.isArray((parsed as { memos?: unknown }).memos)) {
+        return parsed as { folders: MemoFolder[]; memos: Memo[] }
+      }
+    } catch {
+      // First use: start empty.
+    }
+    return { folders: [], memos: [] }
+  }
+
+  private async writeMemoDoc(document: { folders: MemoFolder[]; memos: Memo[] }): Promise<void> {
+    await mkdir(this.root, { recursive: true })
+    const staged = `${this.memosPath}.tmp`
+    await writeFile(staged, JSON.stringify(document, null, 2), 'utf8')
+    await rename(staged, this.memosPath)
+  }
+
+  /** List every memo folder and note (both scopes); the panel filters. */
+  async listMemoData(): Promise<{ folders: MemoFolder[]; memos: Memo[] }> {
+    return await this.readMemoDoc()
+  }
+
+  /** Create one memo folder. */
+  async createMemoFolder(scope: string, parentId: string | null, name: string): Promise<MemoFolder> {
+    return await this.enqueue(async () => {
+      const document = await this.readMemoDoc()
+      const folder: MemoFolder = { folderId: randomId('mf'), scope, parentId, name }
+      await this.writeMemoDoc({ ...document, folders: [...document.folders, folder] })
+      return folder
+    })
+  }
+
+  /** Delete one memo folder; nested folders and their memos go with it. */
+  async deleteMemoFolder(folderId: string): Promise<void> {
+    await this.enqueue(async () => {
+      const document = await this.readMemoDoc()
+      const doomed = new Set([folderId])
+      let grew = true
+      while (grew) {
+        grew = false
+        for (const folder of document.folders) {
+          if (folder.parentId !== null && doomed.has(folder.parentId) && !doomed.has(folder.folderId)) {
+            doomed.add(folder.folderId)
+            grew = true
+          }
+        }
+      }
+      await this.writeMemoDoc({
+        folders: document.folders.filter(folder => !doomed.has(folder.folderId)),
+        memos: document.memos.filter(memo => memo.folderId === null || !doomed.has(memo.folderId)),
+      })
+    })
+  }
+
+  /** Create one memo note. */
+  async createMemo(scope: string, folderId: string | null, title: string): Promise<Memo> {
+    return await this.enqueue(async () => {
+      const document = await this.readMemoDoc()
+      const now = new Date().toISOString()
+      const memo: Memo = { memoId: randomId('memo'), scope, folderId, title, content: '', createdAt: now, updatedAt: now }
+      await this.writeMemoDoc({ ...document, memos: [...document.memos, memo] })
+      return memo
+    })
+  }
+
+  /** Update one memo's title and/or content. */
+  async updateMemo(memoId: string, patch: { title?: string; content?: string }): Promise<Memo> {
+    return await this.enqueue(async () => {
+      const document = await this.readMemoDoc()
+      const previous = document.memos.find(candidate => candidate.memoId === memoId)
+      if (previous === undefined) throw new Error(`memo "${memoId}" does not exist`)
+      const memo: Memo = {
+        ...previous,
+        ...patch.title !== undefined ? { title: patch.title } : {},
+        ...patch.content !== undefined ? { content: patch.content } : {},
+        updatedAt: new Date().toISOString(),
+      }
+      await this.writeMemoDoc({ ...document, memos: document.memos.map(candidate => candidate.memoId === memoId ? memo : candidate) })
+      return memo
+    })
+  }
+
+  /** Delete one memo note. */
+  async deleteMemo(memoId: string): Promise<void> {
+    await this.enqueue(async () => {
+      const document = await this.readMemoDoc()
+      await this.writeMemoDoc({ ...document, memos: document.memos.filter(candidate => candidate.memoId !== memoId) })
+    })
+  }
+
+  // == Book breakdowns: one document holding every breakdown job. ==
+
+  private async readBreakdowns(): Promise<Breakdown[]> {
+    try {
+      const raw = await readFile(this.breakdownsPath, 'utf8')
+      const parsed: unknown = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed.filter(isBreakdown) : []
+    } catch {
+      return []
+    }
+  }
+
+  private async writeBreakdowns(rows: Breakdown[]): Promise<void> {
+    await mkdir(this.root, { recursive: true })
+    const staged = `${this.breakdownsPath}.tmp`
+    await writeFile(staged, JSON.stringify(rows, null, 2), 'utf8')
+    await rename(staged, this.breakdownsPath)
+  }
+
+  /** Create one breakdown job from pasted or imported source text. */
+  async createBreakdown(sourceTitle: string, sourceText: string): Promise<Breakdown> {
+    return await this.enqueue(async () => {
+      const now = new Date().toISOString()
+      const breakdown: Breakdown = {
+        breakdownId: randomId('bk'),
+        sourceTitle,
+        sourceText,
+        reports: [],
+        fused: '',
+        createdAt: now,
+        updatedAt: now,
+      }
+      await this.writeBreakdowns([...await this.readBreakdowns(), breakdown])
+      return breakdown
+    })
+  }
+
+  /** List every breakdown (newest first). */
+  async listBreakdowns(): Promise<Breakdown[]> {
+    const rows = await this.readBreakdowns()
+    return rows.slice().sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+  }
+
+  /** Read one breakdown or fail. */
+  async getBreakdown(breakdownId: string): Promise<Breakdown> {
+    const rows = await this.readBreakdowns()
+    const found = rows.find(candidate => candidate.breakdownId === breakdownId)
+    if (found === undefined) throw new Error(`breakdown "${breakdownId}" does not exist`)
+    return found
+  }
+
+  /** Store one skill-dimension report (replaces the same skill's report). */
+  async addBreakdownReport(breakdownId: string, report: BreakdownReport): Promise<Breakdown> {
+    return await this.enqueue(async () => {
+      const rows = await this.readBreakdowns()
+      const index = rows.findIndex(candidate => candidate.breakdownId === breakdownId)
+      if (index < 0) throw new Error(`breakdown "${breakdownId}" does not exist`)
+      const previous = rows[index] as Breakdown
+      const reports = previous.reports.filter(candidate => candidate.skill !== report.skill)
+      const breakdown: Breakdown = {
+        ...previous,
+        reports: [...reports, report],
+        fused: '',
+        updatedAt: new Date().toISOString(),
+      }
+      rows[index] = breakdown
+      await this.writeBreakdowns(rows)
+      return breakdown
+    })
+  }
+
+  /** Store the fused synthesis document. */
+  async setBreakdownFused(breakdownId: string, fused: string): Promise<Breakdown> {
+    return await this.enqueue(async () => {
+      const rows = await this.readBreakdowns()
+      const index = rows.findIndex(candidate => candidate.breakdownId === breakdownId)
+      if (index < 0) throw new Error(`breakdown "${breakdownId}" does not exist`)
+      const breakdown: Breakdown = { ...rows[index] as Breakdown, fused, updatedAt: new Date().toISOString() }
+      rows[index] = breakdown
+      await this.writeBreakdowns(rows)
+      return breakdown
+    })
+  }
+
+  /** Delete one breakdown job. */
+  async deleteBreakdown(breakdownId: string): Promise<void> {
+    await this.enqueue(async () => {
+      await this.writeBreakdowns((await this.readBreakdowns()).filter(candidate => candidate.breakdownId !== breakdownId))
+    })
+  }
+
+  // == Custom model routes (OpenAI-compatible endpoints added by the writer). ==
+
+  private async readCustomModels(): Promise<CustomModel[]> {
+    try {
+      const raw = await readFile(this.modelsPath, 'utf8')
+      const parsed: unknown = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed.filter(isCustomModel) : []
+    } catch {
+      return []
+    }
+  }
+
+  private async writeCustomModels(rows: CustomModel[]): Promise<void> {
+    await mkdir(this.root, { recursive: true })
+    const staged = `${this.modelsPath}.tmp`
+    await writeFile(staged, JSON.stringify(rows, null, 2), 'utf8')
+    await rename(staged, this.modelsPath)
+  }
+
+  /** List every user-added custom model route. */
+  async listCustomModels(): Promise<CustomModel[]> {
+    return await this.readCustomModels()
+  }
+
+  /** Add or update one custom model route keyed by modelKey. */
+  async saveCustomModel(input: CustomModel): Promise<CustomModel> {
+    return await this.enqueue(async () => {
+      const rows = await this.readCustomModels()
+      const model: CustomModel = {
+        modelKey: input.modelKey,
+        displayName: input.displayName,
+        baseUrl: input.baseUrl.replace(/\/+$/u, ''),
+        apiKey: input.apiKey,
+        model: input.model,
+      }
+      const others = rows.filter(candidate => candidate.modelKey !== model.modelKey)
+      await this.writeCustomModels([...others, model])
+      return model
+    })
+  }
+
+  /** Delete one custom model route. */
+  async deleteCustomModel(modelKey: string): Promise<void> {
+    await this.enqueue(async () => {
+      await this.writeCustomModels((await this.readCustomModels()).filter(candidate => candidate.modelKey !== modelKey))
+    })
+  }
+
   /** Bump the novel's updatedAt after any nested mutation. */
   private async touchNovel(novelId: string): Promise<void> {
     const document = await this.tryReadNovel(novelId)
@@ -456,6 +701,20 @@ declare module '@deepseek-ai/cordis' {
     /** Process-wide novel store; safe for concurrent tool and panel writes. */
     novelStore: NovelStoreService
   }
+}
+
+/** Guard for custom model rows read off disk. */
+function isCustomModel(value: unknown): value is CustomModel {
+  if (typeof value !== 'object' || value === null) return false
+  const row = value as Partial<CustomModel>
+  return typeof row.modelKey === 'string' && typeof row.baseUrl === 'string' && typeof row.model === 'string'
+}
+
+/** Guard for breakdown rows read off disk. */
+function isBreakdown(value: unknown): value is Breakdown {
+  if (typeof value !== 'object' || value === null) return false
+  const row = value as Partial<Breakdown>
+  return typeof row.breakdownId === 'string' && typeof row.sourceText === 'string' && Array.isArray(row.reports)
 }
 
 /** Guard for index rows read off disk. */

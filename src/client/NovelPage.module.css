@@ -1,465 +1,387 @@
-/* Writing desk: two columns (novel list, workbench), token-driven colors. */
 
-.page {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-surface-primary);
+/* ============================================================
+   Animations & interactions
+   ============================================================ */
+
+@keyframes novelFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.header {
-  flex: none;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--dsw-alias-border-subtle);
+@keyframes novelSlideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-.title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
+@keyframes novelSlideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.error {
-  flex: none;
-  margin: 8px 16px 0;
+@keyframes novelPopIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes novelExpand {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
+}
+
+/* ============================================================
+   Base transitions — apply to all interactive elements
+   ============================================================ */
+
+.page button,
+.page select,
+.page input,
+.page textarea,
+.page [class*="Chip"],
+.page [class*="Pill"],
+.page [class*="Button"]:not([class*="Close"]):not([class*="Toggle"]),
+.page [class*="actionButton"],
+.page [class*="topbarButton"],
+.page [class*="formPill"],
+.page [class*="rolePill"],
+.page [class*="skillCard"],
+.page [class*="novelChip"],
+.page [class*="listButton"],
+.page [class*="listButtonActive"],
+.page [class*="iconButton"],
+.page [class*="memoTreeRow"],
+.page [class*="assistantQuick"],
+.page [class*="tab"],
+.page [class*="tabActive"],
+.page [class*="linkChip"] {
+  transition: color 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease,
+    opacity 0.15s ease;
+}
+
+.page button:active:not(:disabled),
+.page [class*="actionButton"]:active:not(:disabled),
+.page [class*="topbarButton"]:active,
+.page [class*="formPill"]:active,
+.page [class*="rolePill"]:active,
+.page [class*="skillCard"]:active:not(:disabled),
+.page [class*="novelChip"]:active,
+.page [class*="linkChip"]:active,
+.page [class*="enhanceButton"]:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* ============================================================
+   Dropdown animation
+   ============================================================ */
+
+.dropdownList {
+  animation: novelPopIn 0.15s ease forwards;
+  transform-origin: top center;
+}
+
+.dropdownItem {
+  transition: color 0.12s ease, background-color 0.12s ease, padding-left 0.12s ease;
+}
+
+.dropdownItem:hover {
+  padding-left: 14px;
+}
+
+.dropdownTrigger {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dropdownTrigger:hover {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+   Action bar buttons — slide + glow on hover
+   ============================================================ */
+
+.actionButton {
+  position: relative;
+}
+
+.actionButton:hover:not(:disabled) {
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--dsw-alias-state-business-primary) 20%, transparent);
+  transform: translateY(-1px);
+}
+
+.actionButton:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+}
+
+.actionBar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--dsw-alias-border-l2) transparent;
+}
+
+.actionBar::-webkit-scrollbar {
+  height: 3px;
+}
+
+.actionBar::-webkit-scrollbar-thumb {
+  background: var(--dsw-alias-border-l2);
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Novel strip chips — hover lift + active glow
+   ============================================================ */
+
+.novelStrip {
+  scrollbar-width: thin;
+  scrollbar-color: var(--dsw-alias-border-l2) transparent;
+}
+
+.novelStrip::-webkit-scrollbar {
+  height: 3px;
+}
+
+.novelStrip::-webkit-scrollbar-thumb {
+  background: var(--dsw-alias-border-l2);
+  border-radius: 2px;
+}
+
+.novelChip {
+  animation: novelFadeIn 0.2s ease forwards;
+}
+
+.novelChip:hover:not(.novelChipActive) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.novelChipActive {
+  animation: novelPopIn 0.15s ease forwards;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--dsw-alias-state-business-primary) 18%, transparent);
+}
+
+/* ============================================================
+   Works list items — slide in from left on mount, hover indent
+   ============================================================ */
+
+.worksList .listButton {
+  animation: novelFadeIn 0.25s ease forwards;
+  border-radius: var(--dsw-radius-md);
   padding: 8px 12px;
-  border-radius: var(--dsw-alias-radius-md);
-  background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent);
-  color: var(--dsw-alias-state-error-primary);
-  font-size: 13px;
 }
 
-.columns {
-  display: flex;
-  flex: 1;
-  min-height: 0;
+.worksList .listButton:hover {
+  padding-left: 16px;
+  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 6%, transparent);
 }
 
-.novelList {
-  display: flex;
-  flex-direction: column;
-  flex: none;
-  width: 240px;
-  overflow-y: auto;
-  padding: 12px;
-  border-right: 1px solid var(--dsw-alias-border-subtle);
-  gap: 8px;
-}
-
-.workbench {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 12px 16px;
-  gap: 12px;
-}
-
-.listHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.listTitle {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--dsw-alias-label-secondary);
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  gap: 2px;
-}
-
-.listRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.listButton,
-.listButtonActive {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: var(--dsw-alias-radius-md);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.listButton:hover {
-  background: var(--dsw-alias-surface-hover);
-}
-
-.listButtonActive {
-  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 14%, transparent);
-}
-
-.listButtonActive:hover {
-  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 14%, transparent);
-}
-
-.novelTitle {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.novelMeta {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11px;
-  color: var(--dsw-alias-label-tertiary);
-}
-
-.iconButton {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--dsw-alias-radius-sm);
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 14px;
-  line-height: 20px;
-  cursor: pointer;
-}
-
-.iconButton:hover {
-  background: var(--dsw-alias-surface-hover);
-  color: var(--dsw-alias-state-error-primary);
-}
-
-.empty {
-  padding: 8px;
-  font-size: 12px;
-  color: var(--dsw-alias-label-tertiary);
-}
-
-.placeholder {
-  padding: 32px 0;
-  font-size: 13px;
-  color: var(--dsw-alias-label-tertiary);
-  text-align: center;
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.novelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.novelHeading {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.statusSelect {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--dsw-alias-label-secondary);
-}
-
-.select {
-  padding: 4px 8px;
-  border: 1px solid var(--dsw-alias-border-subtle);
-  border-radius: var(--dsw-alias-radius-md);
-  background: var(--dsw-alias-surface-primary);
-  color: inherit;
-  font: inherit;
-}
-
-.tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--dsw-alias-border-subtle);
-}
-
-.tab,
-.tabActive {
-  padding: 6px 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.tabActive {
-  border-bottom-color: var(--dsw-alias-state-business-primary);
-  color: var(--dsw-alias-label-primary);
-  font-weight: 600;
-}
-
-.split {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  gap: 12px;
-}
-
-.subList {
-  display: flex;
-  flex-direction: column;
-  flex: none;
-  width: 220px;
-  overflow-y: auto;
-  gap: 8px;
-}
-
-.editor {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.editorArea {
-  flex: 1;
-  min-height: 240px;
-  padding: 12px;
-  border: 1px solid var(--dsw-alias-border-subtle);
-  border-radius: var(--dsw-alias-radius-md);
-  background: var(--dsw-alias-surface-primary);
-  color: inherit;
-  font: inherit;
-  font-size: 14px;
-  line-height: 1.8;
-  resize: none;
-}
-
-.editorArea:focus,
-.textarea:focus {
-  outline: none;
-  border-color: var(--dsw-alias-state-business-primary);
-}
-
-.saved {
-  font-size: 12px;
-  color: var(--dsw-alias-label-tertiary);
-}
-
-.unsaved {
-  font-size: 12px;
-  color: var(--dsw-alias-state-warning-primary);
-}
-
-.tabBody {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.cardList {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  gap: 8px;
-}
+/* ============================================================
+   Card expand/collapse — smooth height + fade
+   ============================================================ */
 
 .card {
-  padding: 10px 12px;
-  border: 1px solid var(--dsw-alias-border-subtle);
-  border-radius: var(--dsw-alias-radius-md);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.cardHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.card:hover {
+  border-color: color-mix(in srgb, var(--dsw-alias-state-business-primary) 30%, var(--dsw-alias-border-l2));
 }
 
-.cardHeader strong {
-  flex: 1;
-  font-size: 13px;
+.card .stack {
+  animation: novelExpand 0.2s ease forwards;
+  overflow: hidden;
 }
 
-.tag {
-  padding: 1px 8px;
-  border-radius: var(--dsw-alias-radius-pill);
-  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 12%, transparent);
-  color: var(--dsw-alias-state-business-primary);
-  font-size: 11px;
+/* ============================================================
+   Tab switching — underline slides (simple crossfade)
+   ============================================================ */
+
+.tab {
+  position: relative;
 }
 
-.cardBody {
-  margin: 6px 0 0;
-  font-size: 12px;
-  line-height: 1.7;
-  color: var(--dsw-alias-label-secondary);
-  white-space: pre-wrap;
+.tabActive {
+  animation: novelFadeIn 0.15s ease forwards;
 }
 
-.textarea {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--dsw-alias-border-subtle);
-  border-radius: var(--dsw-alias-radius-md);
-  background: var(--dsw-alias-surface-primary);
-  color: inherit;
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.6;
-  resize: vertical;
-  box-sizing: border-box;
+.tab::after,
+.tabActive::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--dsw-alias-state-business-primary);
+  transition: width 0.2s ease, left 0.2s ease;
 }
 
-/* AI enhance actions: skill-bound toolbar, suggestion preview, outline cards. */
-
-.enhanceBar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.tabActive::after {
+  width: 60%;
+  left: 20%;
 }
 
-.enhanceButton {
-  padding: 4px 12px;
-  border: 1px solid var(--dsw-alias-border-subtle);
-  border-radius: var(--dsw-alias-radius-pill);
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
+/* ============================================================
+   Memo pad & popups — slide up + scale on open
+   ============================================================ */
+
+.memoPad {
+  animation: novelSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.enhanceButton:hover:not(:disabled) {
-  border-color: var(--dsw-alias-state-business-primary);
-  color: var(--dsw-alias-state-business-primary);
+.memoPadBar {
+  transition: background-color 0.15s ease;
 }
 
-.enhanceButton:disabled {
-  opacity: 0.5;
-  cursor: default;
+.memoPadBar:hover {
+  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 4%, transparent);
+}
+
+/* ============================================================
+   Assistant panel — slide in from right
+   ============================================================ */
+
+.assistPanel {
+  animation: novelSlideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.assistPanel .assistLabel {
+  transition: color 0.15s ease;
+}
+
+.assistPending {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* ============================================================
+   Suggestion panel — fade + slide up on appear
+   ============================================================ */
+
+.suggestion {
+  animation: novelSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ============================================================
+   Link blocks — stagger children
+   ============================================================ */
+
+.linkBlock {
+  animation: novelFadeIn 0.2s ease forwards;
+}
+
+.linkChip {
+  animation: novelPopIn 0.15s ease forwards;
+}
+
+.linkPick {
+  animation: novelExpand 0.15s ease forwards;
+}
+
+/* ============================================================
+   Enhancement error — shake for attention
+   ============================================================ */
+
+@keyframes novelShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 .enhanceError {
-  padding: 8px 12px;
-  border-radius: var(--dsw-alias-radius-md);
-  background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent);
-  color: var(--dsw-alias-state-error-primary);
-  font-size: 12px;
+  animation: novelShake 0.3s ease;
 }
 
-.suggestion {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, var(--dsw-alias-state-business-primary) 40%, transparent);
-  border-radius: var(--dsw-alias-radius-md);
+/* ============================================================
+   Save indicator — pulse when saving
+   ============================================================ */
+
+@keyframes novelPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.suggestionHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
+.unsaved {
+  animation: novelPulse 1.5s ease infinite;
 }
 
-.suggestionSpacer {
-  flex: 1;
+.saved {
+  transition: color 0.3s ease;
 }
 
-.suggestionBody {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid var(--dsw-alias-border-subtle);
-  border-radius: var(--dsw-alias-radius-md);
-  background: var(--dsw-alias-surface-primary);
-  color: inherit;
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.7;
-  resize: vertical;
-  box-sizing: border-box;
+/* ============================================================
+   Scrollbar styling for all scrollable areas
+   ============================================================ */
+
+.page ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.skillGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
-}
-
-.skillCard {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border: 1px solid var(--dsw-alias-border-subtle);
-  border-radius: var(--dsw-alias-radius-md);
+.page ::-webkit-scrollbar-track {
   background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
 }
+
+.page ::-webkit-scrollbar-thumb {
+  background: var(--dsw-alias-border-l2);
+  border-radius: 3px;
+}
+
+.page ::-webkit-scrollbar-thumb:hover {
+  background: var(--dsw-alias-label-tertiary);
+}
+
+/* ============================================================
+   Skill cards — hover scale + border glow
+   ============================================================ */
 
 .skillCard:hover:not(:disabled) {
-  border-color: var(--dsw-alias-state-business-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--dsw-alias-state-business-primary) 15%, transparent);
 }
 
-.skillCard:disabled {
-  opacity: 0.5;
-  cursor: default;
+.skillCard:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
 }
 
-.skillCardTitle {
-  font-size: 13px;
-  font-weight: 600;
+/* ============================================================
+   Column resizer — visual feedback on hover and drag
+   ============================================================ */
+
+.colResizer {
+  position: relative;
+  border-radius: 2px;
+  transition: background-color 0.15s ease, width 0.1s ease;
 }
 
-.skillCardHint {
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--dsw-alias-label-secondary);
+.colResizer:active {
+  background: var(--dsw-alias-state-business-primary);
+  width: 3px;
 }
 
-.skillCardSkill {
-  font-size: 10px;
-  color: var(--dsw-alias-label-tertiary);
+/* ============================================================
+   Memo pad resizer
+   ============================================================ */
+
+.memoHandle {
+  transition: background-color 0.15s ease;
+  border-radius: 3px 0 0 0;
 }
+
+.memoHandle:hover {
+  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 30%, transparent);
+}
+
+/* ============================================================
+   AI assistant chat messages — slide in on send
+   ============================================================ */
+
+.assistantMsgUser,
+.assistantMsgAi {
+  animation: novelFadeIn 0.25s ease forwards;
+}
+
+.assistantQuick {
+  animation: novelFadeIn 0.2s ease forwards;
+}
+
+.assistantQuick:nth-child(2) { animation-delay: 0.05s; }
+.assistantQuick:nth-child(3) { animation-delay: 0.1s; }
+.assistantQuick:nth-child(4) { animation-delay: 0.15s; }

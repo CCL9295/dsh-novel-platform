@@ -6,6 +6,8 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import { Button, Input } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Dropdown } from './Dropdown.tsx'
+import { SkillsManager } from './SkillsManager.tsx'
 import type { NovelFace } from './face.ts'
 import type { NovelLocaleKey } from './locales.ts'
 import type {
@@ -51,6 +53,7 @@ export function SettingsTab(props: {
 }): ReactNode {
   const { novelId, detail, face, t, onChanged } = props
   const [wizard, setWizard] = useState(false)
+  const [skillsOpen, setSkillsOpen] = useState(false)
 
   const deleteWorld = async (entryId: string): Promise<void> => {
     await face.deleteWorldEntry(entryId)
@@ -74,8 +77,10 @@ export function SettingsTab(props: {
             <>
               <div className={css.listHeader}>
                 <span className={css.listTitle}>{t('world.title')}</span>
+                <Button size="sm" onClick={() => setSkillsOpen(value => !value)}>{t('skills.title')}</Button>
                 <Button size="sm" onClick={() => setWizard(true)}>{t('world.wizard')}</Button>
               </div>
+              {skillsOpen && <SkillsManager face={face} t={t} />}
               {(detail.world ?? []).length === 0 && (
                 <div className={css.placeholder}>{t('world.empty')}</div>
               )}
@@ -95,7 +100,7 @@ export function SettingsTab(props: {
   )
 }
 
-/** One world entry with inline edit. */
+/** One collapsible world entry with auto-save. */
 function WorldEntryCard(props: {
   entry: WorldEntry
   face: NovelFace
@@ -103,18 +108,39 @@ function WorldEntryCard(props: {
   onDelete: (entryId: string) => Promise<void>
 }): ReactNode {
   const { entry, face, t, onDelete } = props
-  const [editing, setEditing] = useState(false)
+  const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(entry.content)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const categoryLabel = WORLD_CATEGORIES.find(candidate => candidate.category === entry.category)?.label ?? entry.category
-  const save = async (): Promise<void> => {
-    await face.upsertWorldEntry(entry.novelId, { category: entry.category, title: entry.title, content: draft })
-    setEditing(false)
-  }
+
+  useEffect(() => {
+    if (draft === entry.content) return
+    if (saveTimer.current !== undefined) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      void (async () => {
+        try {
+          await face.upsertWorldEntry(entry.novelId, { category: entry.category, title: entry.title, content: draft })
+          await onChangedRef()
+        } catch {
+          // Transient failure; next edit retries.
+        }
+      })()
+    }, 900)
+    return () => { if (saveTimer.current !== undefined) clearTimeout(saveTimer.current) }
+  }, [draft, entry, face])
+
+  // Forward-ref workaround: use a callback ref for onChanged.
+  const onChangedRef = props.onChanged
+
   return (
     <li className={css.card}>
       <div className={css.cardHeader}>
+        <button type="button" className={css.cardToggle} onClick={() => setOpen(value => !value)}>
+          {open ? '▾' : '▸'}
+        </button>
         <strong>{entry.title}</strong>
         <span className={css.tag}>{categoryLabel}</span>
+        <span className={css.suggestionSpacer} />
         <button
           type="button"
           className={css.iconButton}
@@ -124,19 +150,9 @@ function WorldEntryCard(props: {
           ×
         </button>
       </div>
-      {editing
-        ? (
-            <>
-              <textarea className={css.textarea} value={draft} onChange={event => setDraft(event.target.value)} rows={4} />
-              <div className={css.row}>
-                <Button size="sm" onClick={() => { void save() }}>{t('world.saveEntry')}</Button>
-                <Button size="sm" variant="outline" onClick={() => { setDraft(entry.content); setEditing(false) }}>{t('action.cancel')}</Button>
-              </div>
-            </>
-          )
-        : (
-            <p className={css.cardBody} onClick={() => setEditing(true)} role="presentation">{entry.content}</p>
-          )}
+      {open && (
+        <textarea className={css.textarea} value={draft} onChange={event => setDraft(event.target.value)} rows={4} />
+      )}
     </li>
   )
 }
@@ -301,7 +317,7 @@ function WorldWizard(props: {
   )
 }
 
-/** Character cards (split out of the old settings tab). */
+/** Character cards: one collapsible card per character, auto-saved. */
 function CharacterCards(props: {
   novelId: string
   characters: readonly CharacterRow[]
@@ -325,31 +341,22 @@ function CharacterCards(props: {
       {characters.length === 0 && <div className={css.placeholder}>{t('characters.empty')}</div>}
       <ul className={css.cardList}>
         {characters.map(character => (
-          <li key={character.characterId} className={css.card}>
-            <div className={css.cardHeader}>
-              <strong>{character.name}</strong>
-              <span className={css.tag}>{t(`characters.role.${character.role}` as NovelLocaleKey)}</span>
-              <button
-                type="button"
-                className={css.iconButton}
-                aria-label={t('characters.delete')}
-                onClick={() => { void face.deleteCharacter(character.characterId).then(onChanged) }}
-              >
-                ×
-              </button>
-            </div>
-            <p className={css.cardBody}>{character.profile}</p>
-          </li>
+          <CharacterCard key={character.characterId} character={character} face={face} t={t} onChanged={onChanged} />
         ))}
       </ul>
       <form className={css.stack} onSubmit={(event) => { event.preventDefault(); void save() }}>
-        <div className={css.row}>
-          <Input value={name} onChange={event => setName(event.target.value)} placeholder={t('characters.nameLabel')} />
-          <select className={css.select} value={role} onChange={event => setRole(event.target.value as CharacterRole)}>
-            {CHARACTER_ROLES.map(candidate => (
-              <option key={candidate} value={candidate}>{t(`characters.role.${candidate}` as NovelLocaleKey)}</option>
-            ))}
-          </select>
+        <Input value={name} onChange={event => setName(event.target.value)} placeholder={t('characters.nameLabel')} />
+        <div className={css.rolePills}>
+          {CHARACTER_ROLES.map(candidate => (
+            <button
+              key={candidate}
+              type="button"
+              className={role === candidate ? css.rolePillActive : css.rolePill}
+              onClick={() => setRole(candidate)}
+            >
+              {t(`characters.role.${candidate}` as NovelLocaleKey)}
+            </button>
+          ))}
         </div>
         <textarea
           className={css.textarea}
@@ -363,5 +370,68 @@ function CharacterCards(props: {
         </div>
       </form>
     </>
+  )
+}
+
+/** One collapsible character card with auto-save. */
+function CharacterCard(props: {
+  character: CharacterRow
+  face: NovelFace
+  t: Translate
+  onChanged: () => Promise<void>
+}): ReactNode {
+  const { character, face, t, onChanged } = props
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState(character.name)
+  const [profile, setProfile] = useState(character.profile)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  // Auto-save on content change with debounce.
+  useEffect(() => {
+    if (name === character.name && profile === character.profile) return
+    if (saveTimer.current !== undefined) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      void (async () => {
+        try {
+          await face.upsertCharacter(character.novelId, { name, role: character.role, profile })
+          await onChanged()
+        } catch {
+          // Transient failure; next edit retries.
+        }
+      })()
+    }, 900)
+    return () => { if (saveTimer.current !== undefined) clearTimeout(saveTimer.current) }
+  }, [name, profile, character, face, onChanged])
+
+  return (
+    <li className={css.card}>
+      <div className={css.cardHeader}>
+        <button type="button" className={css.cardToggle} onClick={() => setOpen(value => !value)}>
+          {open ? '▾' : '▸'}
+        </button>
+        <strong>{character.name}</strong>
+        <span className={css.tag}>{t(`characters.role.${character.role}` as NovelLocaleKey)}</span>
+        <span className={css.suggestionSpacer} />
+        <button
+          type="button"
+          className={css.iconButton}
+          aria-label={t('characters.delete')}
+          onClick={() => { void face.deleteCharacter(character.characterId).then(onChanged) }}
+        >
+          ×
+        </button>
+      </div>
+      {open && (
+        <div className={css.stack}>
+          <Input value={name} onChange={event => setName(event.target.value)} />
+          <textarea
+            className={css.textarea}
+            value={profile}
+            onChange={event => setProfile(event.target.value)}
+            rows={4}
+          />
+        </div>
+      )}
+    </li>
   )
 }

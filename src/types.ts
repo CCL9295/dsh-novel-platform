@@ -17,12 +17,16 @@ export type ChapterStatus = 'outline' | 'draft' | 'revised' | 'published'
 /** Dramatic role of one character card. */
 export type CharacterRole = 'protagonist' | 'supporting' | 'antagonist' | 'minor'
 
+/** Novel length form: long-form serials vs short pieces. */
+export type NovelForm = 'long' | 'short'
+
 /** One novel as Client and tools read it. */
 export interface NovelRow {
   readonly novelId: string
   readonly title: string
   readonly genre: string
   readonly description: string
+  readonly form: NovelForm
   readonly status: NovelStatus
   readonly createdAt: string
   readonly updatedAt: string
@@ -79,6 +83,7 @@ export interface NovelCreateInput {
   readonly title: string
   readonly genre: string
   readonly description: string
+  readonly form: NovelForm
 }
 
 /** Mutable novel fields. */
@@ -171,4 +176,82 @@ export interface GuideStepInfo {
   readonly title: string
   /** The guiding question shown to the writer for this step. */
   readonly question: string
+}
+
+/** One memo folder in the tree (parentId null = root level). */
+export interface MemoFolder {
+  readonly folderId: string
+  /** 'global' (visible from every novel) or the novelId this folder belongs to. */
+  readonly scope: 'global' | (string & {})
+  readonly parentId: string | null
+  readonly name: string
+}
+
+/** One memo note. */
+export interface Memo {
+  readonly memoId: string
+  /** 'global' (visible from every novel) or the novelId this memo belongs to. */
+  readonly scope: 'global' | (string & {})
+  readonly folderId: string | null
+  readonly title: string
+  readonly content: string
+  readonly createdAt: string
+  readonly updatedAt: string
+}
+
+/** One skill-dimension report inside a book breakdown. */
+export interface BreakdownReport {
+  readonly skill: string
+  readonly label: string
+  readonly content: string
+}
+
+/** One book-breakdown job: source text, per-skill reports, optional fused synthesis. */
+export interface Breakdown {
+  readonly breakdownId: string
+  readonly sourceTitle: string
+  readonly sourceText: string
+  readonly reports: readonly BreakdownReport[]
+  /** The fused synthesis document; empty until generated. */
+  readonly fused: string
+  readonly createdAt: string
+  readonly updatedAt: string
+}
+
+/** One user-added custom model route (OpenAI-compatible chat endpoint). */
+export interface CustomModel {
+  readonly modelKey: string
+  readonly displayName: string
+  readonly baseUrl: string
+  readonly apiKey: string
+  readonly model: string
+}
+
+/** Optional overrides for one enhance call. */
+export interface EnhanceInput {
+  /** Model override; defaults to the deployment's default selection. */
+  readonly provider?: string
+  readonly model?: string
+  /** Skill override: any registered skill name (bundled or user-imported). */
+  readonly skill?: string
+  /** Extra free-form instruction from the writer. */
+  readonly note?: string
+  /** Memo content to inject (assembled by the panel from linked memos). */
+  readonly memoContext?: string
+  /** Reference chapter text to inject (assembled by the panel). */
+  readonly chapterContext?: string
+  /** Custom model route; when present the call goes straight to its endpoint. */
+  readonly custom?: CustomModel
+}
+
+/** One selectable model route for the panel's model picker. */
+export interface ModelRouteInfo {
+  readonly provider: string
+  readonly models: readonly string[]
+}
+
+/** Mutable memo fields. */
+export interface MemoPatch {
+  readonly title?: string
+  readonly content?: string
 }

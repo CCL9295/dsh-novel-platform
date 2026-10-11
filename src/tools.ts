@@ -55,10 +55,11 @@ export function registerNovelTools(ctx: Context, store: NovelStoreService): void
       title: { type: 'string', required: true, description: 'Book title' },
       genre: { type: 'string', required: true, description: 'Web-novel genre/题材' },
       description: { type: 'string', required: true, description: 'Blurb/简介' },
+      form: { type: 'string', enum: ['long', 'short'], description: 'Length form; default long' },
     },
     output: { schema: { type: 'json' }, render: renderJson },
     async execute(args) {
-      return asJson(await store.createNovel(args))
+      return asJson(await store.createNovel({ ...args, form: args.form ?? 'long' }))
     },
   }))
 

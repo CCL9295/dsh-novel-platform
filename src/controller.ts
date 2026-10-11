@@ -12,13 +12,19 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type {
-  ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
-  ChapterCreateInput, EnhanceActionInfo, EnhanceKind, EnhanceResult,
-  NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
-  OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput, GuideStepInfo,
+  Breakdown, BreakdownReport, ChapterDetail, ChapterPatch, ChapterRow,
+  CharacterRow, CharacterUpsertInput, ChapterCreateInput, CustomModel,
+  EnhanceActionInfo, EnhanceInput, EnhanceKind, EnhanceResult, Memo,
+  MemoFolder, ModelRouteInfo, NovelCreateInput, NovelDetail, NovelPatch,
+  NovelRow, OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput,
+  GuideStepInfo,
 } from './types.ts'
 import type { NovelStoreService } from './store.ts'
-import { enhance, guideDraft, listActions, GUIDE_STEPS } from './enhance.ts'
+import {
+  deleteUserSkill, enhance, fuseBreakdown, guideDraft, listActions,
+  listKnownSkills, listModelRoutes, runBreakdownReport, saveUserSkill,
+  GUIDE_STEPS,
+} from './enhance.ts'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface RemoteErrorDetailsMap {
@@ -204,9 +210,9 @@ export class NovelController extends TypertRemoteService {
 
   /** Run one skill-steered enhance action; returns a suggestion, never applies it. */
   @Remote('enhance')
-  async enhance(kind: EnhanceKind, targetId: string, actionId: string): Promise<EnhanceResult> {
+  async enhance(kind: EnhanceKind, targetId: string, actionId: string, input: EnhanceInput): Promise<EnhanceResult> {
     try {
-      return await enhance(this.ctx, this.store, kind, targetId, actionId)
+      return await enhance(this.ctx, this.store, kind, targetId, actionId, input)
     } catch (error: unknown) {
       throw domainError(error)
     }
@@ -246,5 +252,139 @@ export class NovelController extends TypertRemoteService {
     } catch (error: unknown) {
       throw domainError(error)
     }
+  }
+
+  // == Memos ==
+
+  /** List every memo folder and note across scopes. */
+  @Remote('memoData')
+  async memoData(): Promise<{ folders: MemoFolder[]; memos: Memo[] }> {
+    return await this.store.listMemoData()
+  }
+
+  /** Create one memo folder. */
+  @Remote('memoFolderCreate')
+  async createMemoFolder(scope: string, parentId: string | null, name: string): Promise<MemoFolder> {
+    return await this.store.createMemoFolder(scope, parentId, name)
+  }
+
+  /** Delete one memo folder with everything inside it. */
+  @Remote('memoFolderDelete')
+  async deleteMemoFolder(folderId: string): Promise<void> {
+    await this.store.deleteMemoFolder(folderId)
+  }
+
+  /** Create one memo note. */
+  @Remote('memoCreate')
+  async createMemo(scope: string, folderId: string | null, title: string): Promise<Memo> {
+    return await this.store.createMemo(scope, folderId, title)
+  }
+
+  /** Update one memo's title and/or content. */
+  @Remote('memoUpdate')
+  async updateMemo(memoId: string, patch: { title?: string; content?: string }): Promise<Memo> {
+    return await this.store.updateMemo(memoId, patch)
+  }
+
+  /** Delete one memo note. */
+  @Remote('memoDelete')
+  async deleteMemo(memoId: string): Promise<void> {
+    await this.store.deleteMemo(memoId)
+  }
+
+  // == Book breakdowns ==
+
+  /** Create one breakdown job from pasted or imported source text. */
+  @Remote('breakdownCreate')
+  async createBreakdown(sourceTitle: string, sourceText: string): Promise<Breakdown> {
+    return await this.store.createBreakdown(sourceTitle, sourceText)
+  }
+
+  /** List every breakdown job. */
+  @Remote('breakdownList')
+  async listBreakdowns(): Promise<Breakdown[]> {
+    return await this.store.listBreakdowns()
+  }
+
+  /** Delete one breakdown job. */
+  @Remote('breakdownDelete')
+  async deleteBreakdown(breakdownId: string): Promise<void> {
+    await this.store.deleteBreakdown(breakdownId)
+  }
+
+  /** Run one skill-dimension breakdown over the stored source text. */
+  @Remote('breakdownRun')
+  async runBreakdown(breakdownId: string, skill: string, input: EnhanceInput): Promise<BreakdownReport> {
+    try {
+      const { report } = await runBreakdownReport(this.ctx, this.store, breakdownId, skill, input)
+      return report
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  /** Fuse every stored dimension report into one coherent document. */
+  @Remote('breakdownFuse')
+  async fuseBreakdown(breakdownId: string, input: EnhanceInput): Promise<Breakdown> {
+    try {
+      await fuseBreakdown(this.ctx, this.store, breakdownId, input)
+      return await this.store.getBreakdown(breakdownId)
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  // == Skills (bundled + user-imported) ==
+
+  /** List every registered skill with its source. */
+  @Remote('skillList')
+  async listSkills(): Promise<{ name: string; description: string; source: string }[]> {
+    return await listKnownSkills(this.ctx)
+  }
+
+  /** Save one user-imported skill into ~/.dsh/skills/. */
+  @Remote('skillSave')
+  async saveSkill(name: string, description: string, content: string): Promise<{ path: string }> {
+    try {
+      return await saveUserSkill(name, description, content)
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  /** Delete one user-imported skill (bundled skills refuse). */
+  @Remote('skillDelete')
+  async deleteSkill(name: string): Promise<void> {
+    try {
+      await deleteUserSkill(name)
+    } catch (error: unknown) {
+      throw domainError(error)
+    }
+  }
+
+  // == Model routes ==
+
+  /** Every selectable provider route with its models, plus custom routes. */
+  @Remote('modelList')
+  async listModels(): Promise<ModelRouteInfo[]> {
+    return await listModelRoutes(this.ctx, this.store)
+  }
+
+  /** List user-added custom model routes. */
+  @Remote('customModelList')
+  async listCustomModels(): Promise<CustomModel[]> {
+    return await this.store.listCustomModels()
+  }
+
+  /** Add or update one custom model route. */
+  @Remote('customModelSave')
+  async saveCustomModel(input: CustomModel): Promise<CustomModel> {
+    return await this.store.saveCustomModel(input)
+  }
+
+  /** Delete one custom model route. */
+  @Remote('customModelDelete')
+  async deleteCustomModel(modelKey: string): Promise<void> {
+    await this.store.deleteCustomModel(modelKey)
   }
 }

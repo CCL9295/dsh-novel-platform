@@ -17,8 +17,12 @@ import type {} from '@deepseek-ai/dsh-agent-default-model'
 import type {} from '@deepseek-ai/dsh-skill'
 import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
 import type { NovelStoreService } from './store.ts'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { dshHomePath } from '@deepseek-ai/dsh-home-paths'
 import type {
-  EnhanceActionInfo, EnhanceKind, EnhanceResult, GuideStepInfo, NovelDetail,
+  EnhanceActionInfo, EnhanceInput, EnhanceKind, EnhanceResult, GuideStepInfo,
+  ModelRouteInfo, NovelDetail,
 } from './types.ts'
 
 /** Chapter-surface actions, each bound to one 弧光 skill. */
@@ -39,6 +43,7 @@ export const OUTLINE_ACTIONS: readonly EnhanceActionInfo[] = [
   { actionId: 'outline-pleasure', kind: 'outline', label: '爽点布局', skill: 'novel-pleasure-points', hint: '在大纲层面铺设爽点与期待感' },
   { actionId: 'outline-emotion', kind: 'outline', label: '情绪曲线', skill: 'novel-emotion', hint: '安排情绪起伏、共情点与释放节奏' },
   { actionId: 'outline-character', kind: 'outline', label: '人物弧光', skill: 'novel-character-design', hint: '角色成长线、关系与反派塑造' },
+  { actionId: 'assistant-chat', kind: 'outline', label: 'AI 助手', skill: 'novel-character-design', hint: '自由对话，辅助创作' },
 ]
 
 /** All actions in UI order: chapter buttons first, then outline cards. */
@@ -82,6 +87,8 @@ function taskInstruction(action: EnhanceActionInfo): string {
       return '请按技能要求为下面的作品大纲安排情绪曲线（压抑、共情、释放的节奏），逐条说明，最后输出调整后的完整大纲。'
     case 'outline-character':
       return '请按技能要求审视下面的作品大纲中的人物成长线、关系与反派塑造，逐条给出建议，最后输出补充人物线后的完整大纲。'
+    case 'assistant-chat':
+      return '请根据下面提供的上下文和用户的问题，给出具体的、可操作的建议或内容。如果用户要求生成设定或大纲，直接输出结果。'
     default:
       return '请按技能要求处理下面的文本。'
   }
@@ -154,18 +161,7 @@ export async function guideDraft(
     messages,
     maxTokens: 8192,
   }
-  const parts: string[] = []
-  let finish: { kind: string; message?: string } | undefined
-  for await (const chunk of ctx.llm.stream(options)) {
-    if (chunk.type === 'text-delta') parts.push(chunk.text)
-    if (chunk.type === 'finish' && (chunk.reason.kind === 'error' || chunk.reason.kind === 'aborted')) {
-      finish = { kind: chunk.reason.kind, message: chunk.reason.failure.message }
-    }
-  }
-  if (finish !== undefined) {
-    throw new RemoteError('novel/rejected', `模型调用失败（${finish.kind}）${finish.message === undefined ? '' : `：${finish.message}`}`, { reason: finish.message ?? finish.kind })
-  }
-  const suggestion = parts.join('').trim()
+  const suggestion = await completeText(ctx, options, {})
   if (suggestion.length === 0) {
     throw new RemoteError('novel/rejected', '模型没有返回内容，请稍后重试', { reason: 'empty generation' })
   }
@@ -183,6 +179,48 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   }
 }
 
+/** Dispatch one chat completion: custom routes go straight to their endpoint, the rest through ctx.llm. */
+async function completeText(
+  ctx: Context,
+  options: GenerateOptions,
+  input: EnhanceInput,
+): Promise<string> {
+  const parts: string[] = []
+  let failure: string | undefined
+  if (input.custom !== undefined) {
+    const custom = input.custom
+    const response = await fetch(`${custom.baseUrl.replace(/\/+$/u, '')}/chat/completions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${custom.apiKey}` },
+      body: JSON.stringify({
+        model: custom.model,
+        messages: options.messages,
+        max_tokens: options.maxTokens,
+        stream: false,
+      }),
+    })
+    if (!response.ok) {
+      throw new RemoteError('novel/rejected', `自定义模型请求失败（HTTP ${String(response.status)}）`, { reason: 'custom endpoint error' })
+    }
+    const data: unknown = await response.json()
+    const choice = (data as { choices?: { message?: { content?: string } }[] }).choices?.[0]
+    const text = choice?.message?.content ?? ''
+    return text.trim()
+  }
+  let finish: { kind: string; message?: string } | undefined
+  for await (const chunk of ctx.llm.stream(options)) {
+    if (chunk.type === 'text-delta') parts.push(chunk.text)
+    if (chunk.type === 'finish' && (chunk.reason.kind === 'error' || chunk.reason.kind === 'aborted')) {
+      finish = { kind: chunk.reason.kind, message: chunk.reason.failure.message }
+    }
+  }
+  if (finish !== undefined) {
+    throw new RemoteError('novel/rejected', `模型调用失败（${finish.kind}）${finish.message === undefined ? '' : `：${finish.message}`}`, { reason: finish.message ?? finish.kind })
+  }
+  void failure
+  return parts.join('').trim()
+}
+
 /** Run one skill-steered enhance call and return the raw suggestion. */
 export async function enhance(
   ctx: Context,
@@ -190,6 +228,7 @@ export async function enhance(
   kind: EnhanceKind,
   targetId: string,
   actionId: string,
+  input: EnhanceInput = {},
 ): Promise<EnhanceResult> {
   const action = findAction(kind, actionId)
 
@@ -207,20 +246,28 @@ export async function enhance(
     target = outlineText(novel.novel, novel.outline)
   }
 
-  // The 弧光 skill body steers the model; a missing registration degrades to
-  // the bare task instruction rather than failing the action.
-  const skill = await ctx.skills.get(action.skill).catch(() => undefined)
+  // The 弧光 skill body steers the model; the panel may override the skill
+  // (user-imported skills). A missing registration degrades to the bare task
+  // instruction rather than failing the action.
+  const skill = await ctx.skills.get(input.skill ?? action.skill).catch(() => undefined)
   const skillBody = skill?.content ?? ''
 
-  const selection = ctx.agentDefaultModel?.currentSelection()
-  if (selection === undefined || selection.provider.length === 0 || selection.model.length === 0) {
-    throw new RemoteError('novel/no-model', '没有可用的默认模型：请先在设置里配置模型', { reason: 'no default model selection' })
+  const fallbackSelection = ctx.agentDefaultModel?.currentSelection()
+  const selection = {
+    provider: input.provider ?? fallbackSelection?.provider ?? '',
+    model: input.model ?? fallbackSelection?.model ?? '',
+    reasoningEffort: input.provider === undefined && input.model === undefined ? fallbackSelection?.reasoningEffort : undefined,
+  }
+  if (input.custom === undefined && (selection.provider.length === 0 || selection.model.length === 0)) {
+    throw new RemoteError('novel/no-model', '没有可用的模型：请在面板选择模型或在设置里配置默认模型', { reason: 'no model selection' })
   }
 
   const prompt = [
-    skillBody.length > 0 ? `【技能指引（${action.skill}）】\n${skillBody}` : '',
+    skillBody.length > 0 ? `【技能指引（${skill?.name ?? action.skill}）】\n${skillBody}` : '',
     settings.length > 0 ? `【设定集（必须保持一致）】\n${settings}` : '',
-    `【任务】\n${taskInstruction(action)}`,
+    input.memoContext !== undefined && input.memoContext.length > 0 ? `【关联备忘录】\n${input.memoContext}` : '',
+    input.chapterContext !== undefined && input.chapterContext.length > 0 ? `【参考章节】\n${input.chapterContext}` : '',
+    `【任务】\n${taskInstruction(action)}${input.note !== undefined && input.note.trim().length > 0 ? `\n作者补充要求：${input.note.trim()}` : ''}`,
     `【目标文本】\n${target}`,
   ].filter(section => section.length > 0).join('\n\n')
 
@@ -235,6 +282,71 @@ export async function enhance(
     maxTokens: 16384,
   }
 
+  const suggestion = await completeText(ctx, options, input)
+  if (suggestion.length === 0) {
+    throw new RemoteError('novel/rejected', '模型没有返回内容，请稍后重试', { reason: 'empty generation' })
+  }
+  return { actionId: action.actionId, kind, label: action.label, skill: skill?.name ?? action.skill, suggestion }
+}
+
+
+// == Book breakdown: per-skill reports over one source text. ==
+
+/** Breakdown dimensions, each bound to a 弧光 skill. */
+export const BREAKDOWN_SKILLS: readonly { skill: string; label: string; task: string }[] = [
+  { skill: 'novel-pacing', label: '节奏结构', task: '拆解这段文本的节奏结构：章节钩子、卡点密度、多幕推进、信息释放节奏，给出可直接套用的结论。' },
+  { skill: 'novel-pleasure-points', label: '爽点分析', task: '拆解这段文本的爽点：类型、密度、位置、铺垫与释放方式，总结可复用的爽点公式。' },
+  { skill: 'novel-character-design', label: '人物弧光', task: '拆解这段文本的人物塑造：主角与核心角色的出场方式、性格标签、关系网与弧光设计。' },
+  { skill: 'novel-worldbuilding', label: '世界观', task: '拆解这段文本的世界观：设定元素、揭示节奏、规则与禁忌如何服务剧情。' },
+  { skill: 'novel-innovation', label: '反套路', task: '拆解这段文本对套路的使用与突破：哪些桥段是套路、哪些是创新、效果如何。' },
+  { skill: 'novel-language-style', label: '文风', task: '拆解这段文本的文风：叙事视角、句式节奏、修辞习惯与语言指纹。' },
+]
+
+/** Per-dimension task instruction for a breakdown skill. */
+function breakdownTask(skill: string): string {
+  const found = BREAKDOWN_SKILLS.find(candidate => candidate.skill === skill)
+  return found?.task ?? '请按技能要求拆解下面的文本，输出结构化的拆解结论。'
+}
+
+/** Run one breakdown dimension over the source text and return the report. */
+export async function runBreakdownReport(
+  ctx: Context,
+  store: NovelStoreService,
+  breakdownId: string,
+  skill: string,
+  input: EnhanceInput = {},
+): Promise<{ report: import('./types.ts').BreakdownReport; breakdown: import('./types.ts').Breakdown }> {
+  const breakdown = await store.getBreakdown(breakdownId)
+  const dimension = BREAKDOWN_SKILLS.find(candidate => candidate.skill === skill)
+  const label = dimension?.label ?? skill
+  const skillLoaded = await ctx.skills.get(skill).catch(() => undefined)
+  const selection = {
+    provider: input.provider ?? ctx.agentDefaultModel?.currentSelection().provider ?? '',
+    model: input.model ?? ctx.agentDefaultModel?.currentSelection().model ?? '',
+  }
+  if (selection.provider.length === 0 || selection.model.length === 0) {
+    throw new RemoteError('novel/no-model', '没有可用的模型：请先选择模型或配置默认模型', { reason: 'no model selection' })
+  }
+  // Very long sources are truncated to keep one call well within context.
+  const source = breakdown.sourceText.length > 40000
+    ? `${breakdown.sourceText.slice(0, 40000)}\n\n（原文过长，已截断至 4 万字）`
+    : breakdown.sourceText
+  const prompt = [
+    skillLoaded?.content !== undefined ? `【技能指引（${skill}）】\n${skillLoaded.content}` : '',
+    `【任务】\n${breakdownTask(skill)}`,
+    `【原文】\n${source}`,
+  ].filter(section => section.length > 0).join('\n\n')
+  const messages: RequestMessage[] = [
+    Object.freeze({ role: 'user', content: [{ type: 'text' as const, text: prompt }] }),
+  ]
+  const effort = ctx.agentDefaultModel?.currentSelection().reasoningEffort
+  const options: GenerateOptions = {
+    provider: selection.provider,
+    model: selection.model,
+    ...effort === undefined ? {} : { reasoningEffort: effort },
+    messages,
+    maxTokens: 16384,
+  }
   const parts: string[] = []
   let finish: { kind: string; message?: string } | undefined
   for await (const chunk of ctx.llm.stream(options)) {
@@ -246,9 +358,104 @@ export async function enhance(
   if (finish !== undefined) {
     throw new RemoteError('novel/rejected', `模型调用失败（${finish.kind}）${finish.message === undefined ? '' : `：${finish.message}`}`, { reason: finish.message ?? finish.kind })
   }
-  const suggestion = parts.join('').trim()
-  if (suggestion.length === 0) {
+  const content = parts.join('').trim()
+  if (content.length === 0) {
     throw new RemoteError('novel/rejected', '模型没有返回内容，请稍后重试', { reason: 'empty generation' })
   }
-  return { actionId: action.actionId, kind, label: action.label, skill: action.skill, suggestion }
+  const report = { skill, label, content }
+  const updated = await store.addBreakdownReport(breakdownId, report)
+  return { report, breakdown: updated }
+}
+
+/** Fuse every stored dimension report into one coherent breakdown document. */
+export async function fuseBreakdown(
+  ctx: Context,
+  store: NovelStoreService,
+  breakdownId: string,
+  input: EnhanceInput = {},
+): Promise<string> {
+  const breakdown = await store.getBreakdown(breakdownId)
+  if (breakdown.reports.length === 0) {
+    throw new RemoteError('novel/rejected', '还没有任何拆解报告，请先拆解至少一个维度', { reason: 'no reports' })
+  }
+  const selection = {
+    provider: input.provider ?? ctx.agentDefaultModel?.currentSelection().provider ?? '',
+    model: input.model ?? ctx.agentDefaultModel?.currentSelection().model ?? '',
+  }
+  if (selection.provider.length === 0 || selection.model.length === 0) {
+    throw new RemoteError('novel/no-model', '没有可用的模型：请先选择模型或配置默认模型', { reason: 'no model selection' })
+  }
+  const sections = breakdown.reports
+    .map(report => `## ${report.label}（${report.skill}）\n\n${report.content}`)
+    .join('\n\n')
+  const prompt = `你是一位网文编辑。下面是对同一部作品拆解出的多份维度报告。请把它们融合成**一份连贯的综合拆解书**：交叉分析各维度如何互相成就（如爽点密度与节奏卡点的配合、人物弧光与世界观的关系），去重整合，最后给出"这部作品为什么成立"的整体结论与可复用要点清单。直接输出文档，不要解释。\n\n${sections}`
+  const messages: RequestMessage[] = [
+    Object.freeze({ role: 'user', content: [{ type: 'text' as const, text: prompt }] }),
+  ]
+  const options: GenerateOptions = {
+    provider: selection.provider,
+    model: selection.model,
+    messages,
+    maxTokens: 16384,
+  }
+  const fused = await completeText(ctx, options, input)
+  if (fused.length === 0) {
+    throw new RemoteError('novel/rejected', '模型没有返回内容，请稍后重试', { reason: 'empty generation' })
+  }
+  await store.setBreakdownFused(breakdownId, fused)
+  return fused
+}
+
+// == Skill import: user skills land in ~/.dsh/skills/<name>/SKILL.md. ==
+
+const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/** List every registered skill (bundled + user-imported) for the manager UI. */
+export async function listKnownSkills(ctx: Context): Promise<{ name: string; description: string; source: string }[]> {
+  const summaries = await ctx.skills.list()
+  return summaries.map(summary => ({ name: summary.name, description: summary.description, source: summary.source }))
+}
+
+/** Save one user-imported skill into the dsh user skills directory. */
+export async function saveUserSkill(name: string, description: string, content: string): Promise<{ path: string }> {
+  if (!SKILL_NAME.test(name)) {
+    throw new RemoteError('novel/rejected', `技能名必须是 kebab-case（小写字母/数字/连字符），收到 "${name}"`, { reason: 'invalid name' })
+  }
+  if (description.trim().length === 0) {
+    throw new RemoteError('novel/rejected', '技能描述不能为空', { reason: 'no description' })
+  }
+  const dir = dshHomePath('skills', name)
+  const body = [
+    '---',
+    `name: ${name}`,
+    `description: ${description.trim()}`,
+    '---',
+    '',
+    content.trim(),
+    '',
+  ].join('\n')
+  await mkdir(dir, { recursive: true })
+  const file = join(dir, 'SKILL.md')
+  await writeFile(file, body, 'utf8')
+  return { path: file }
+}
+
+/** Delete one user-imported skill; bundled skills refuse to be removed. */
+export async function deleteUserSkill(name: string): Promise<void> {
+  await rm(dshHomePath('skills', name), { recursive: true, force: true })
+}
+
+/** List selectable model routes: host providers first, then custom ones. */
+export async function listModelRoutes(ctx: Context, store: NovelStoreService): Promise<ModelRouteInfo[]> {
+  const providers = ctx.llm.listProviders()
+  const routes: ModelRouteInfo[] = []
+  for (const provider of providers) {
+    const models = await ctx.llm.listModels(provider.id).catch(() => [])
+    routes.push({ provider: provider.id, models: models.map(model => model.id) })
+  }
+  const customs = await store.listCustomModels()
+  if (customs.length > 0) {
+    routes.push({ provider: '__custom__', models: customs.map(model => `${model.displayName}::${model.modelKey}`) })
+  }
+  return routes
 }

@@ -1,0 +1,29 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
+  },
+  "include": [
+    "src/index.ts",
+    "src/types.ts",
+    "src/store.ts",
+    "src/controller.ts",
+    "src/tools.ts",
+    "src/skills.ts",
+    "src/enhance.ts"
+  ],
+  "references": [
+    { "path": "../../../vendor/cordis" },
+    { "path": "../../../vendor/schemastery" },
+    { "path": "../../core/tools" },
+    { "path": "../../core/scope" },
+    { "path": "../../core/agent-default-model" },
+    { "path": "../../llm/llm" },
+    { "path": "../../skill/skill" },
+    { "path": "../../typert/protocol" },
+    { "path": "../../util/home-paths" },
+    { "path": "../../util/values" }
+  ]
+}

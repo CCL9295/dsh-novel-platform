@@ -3,11 +3,16 @@ import type {
   RemoteResult,
   TypertRemoteContribution,
 } from '@deepseek-ai/dsh-typert-protocol'
-import type { ChapterCreateInput, ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput, EnhanceActionInfo, EnhanceKind, EnhanceResult, GuideStepInfo, NovelCreateInput, NovelDetail, NovelPatch, NovelRow, OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput } from '@deepseek-ai/dsh-novel-platform/types'
+import type { Breakdown, BreakdownReport, ChapterCreateInput, ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput, CustomModel, EnhanceActionInfo, EnhanceInput, EnhanceKind, EnhanceResult, GuideStepInfo, Memo, MemoFolder, ModelRouteInfo, NovelCreateInput, NovelDetail, NovelPatch, NovelRow, OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput } from '@deepseek-ai/dsh-novel-platform/types'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$6e6f76656c {
     actions: () => Promise<RemoteResult<EnhanceActionInfo[]>>
+    breakdownCreate: (sourceTitle: string, sourceText: string) => Promise<RemoteResult<Breakdown>>
+    breakdownDelete: (breakdownId: string) => Promise<RemoteResult<void>>
+    breakdownFuse: (breakdownId: string, input: EnhanceInput) => Promise<RemoteResult<Breakdown>>
+    breakdownList: () => Promise<RemoteResult<Breakdown[]>>
+    breakdownRun: (breakdownId: string, skill: string, input: EnhanceInput) => Promise<RemoteResult<BreakdownReport>>
     chapter: (chapterId: string) => Promise<RemoteResult<ChapterDetail>>
     chapterCreate: (novelId: string, input: ChapterCreateInput) => Promise<RemoteResult<ChapterRow>>
     chapterDelete: (chapterId: string) => Promise<RemoteResult<void>>
@@ -15,20 +20,38 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     characterDelete: (characterId: string) => Promise<RemoteResult<void>>
     characterUpsert: (novelId: string, input: CharacterUpsertInput) => Promise<RemoteResult<CharacterRow>>
     create: (input: NovelCreateInput) => Promise<RemoteResult<NovelRow>>
+    customModelDelete: (modelKey: string) => Promise<RemoteResult<void>>
+    customModelList: () => Promise<RemoteResult<CustomModel[]>>
+    customModelSave: (input: CustomModel) => Promise<RemoteResult<CustomModel>>
     delete: (novelId: string) => Promise<RemoteResult<void>>
     detail: (novelId: string) => Promise<RemoteResult<NovelDetail>>
-    enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
+    enhance: (kind: EnhanceKind, targetId: string, actionId: string, input: EnhanceInput) => Promise<RemoteResult<EnhanceResult>>
     guideDraft: (novelId: string, stepId: string, userNote: string) => Promise<RemoteResult<EnhanceResult>>
     guideSteps: () => Promise<RemoteResult<readonly GuideStepInfo[]>>
     list: () => Promise<RemoteResult<NovelRow[]>>
+    memoCreate: (scope: string, folderId: string | null, title: string) => Promise<RemoteResult<Memo>>
+    memoData: () => Promise<RemoteResult<{ folders: MemoFolder[]; memos: Memo[]; }>>
+    memoDelete: (memoId: string) => Promise<RemoteResult<void>>
+    memoFolderCreate: (scope: string, parentId: string | null, name: string) => Promise<RemoteResult<MemoFolder>>
+    memoFolderDelete: (folderId: string) => Promise<RemoteResult<void>>
+    memoUpdate: (memoId: string, patch: { title?: string; content?: string; }) => Promise<RemoteResult<Memo>>
+    modelList: () => Promise<RemoteResult<ModelRouteInfo[]>>
     outlineDelete: (entryId: string) => Promise<RemoteResult<void>>
     outlineUpsert: (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
+    skillDelete: (name: string) => Promise<RemoteResult<void>>
+    skillList: () => Promise<RemoteResult<{ name: string; description: string; source: string; }[]>>
+    skillSave: (name: string, description: string, content: string) => Promise<RemoteResult<{ path: string; }>>
     update: (novelId: string, patch: NovelPatch) => Promise<RemoteResult<NovelRow>>
     worldDelete: (entryId: string) => Promise<RemoteResult<void>>
     worldUpsert: (novelId: string, input: WorldUpsertInput) => Promise<RemoteResult<WorldEntry>>
   }
   interface TypertRemoteMap {
     'novel/actions': () => Promise<RemoteResult<EnhanceActionInfo[]>>
+    'novel/breakdownCreate': (sourceTitle: string, sourceText: string) => Promise<RemoteResult<Breakdown>>
+    'novel/breakdownDelete': (breakdownId: string) => Promise<RemoteResult<void>>
+    'novel/breakdownFuse': (breakdownId: string, input: EnhanceInput) => Promise<RemoteResult<Breakdown>>
+    'novel/breakdownList': () => Promise<RemoteResult<Breakdown[]>>
+    'novel/breakdownRun': (breakdownId: string, skill: string, input: EnhanceInput) => Promise<RemoteResult<BreakdownReport>>
     'novel/chapter': (chapterId: string) => Promise<RemoteResult<ChapterDetail>>
     'novel/chapterCreate': (novelId: string, input: ChapterCreateInput) => Promise<RemoteResult<ChapterRow>>
     'novel/chapterDelete': (chapterId: string) => Promise<RemoteResult<void>>
@@ -36,14 +59,27 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'novel/characterDelete': (characterId: string) => Promise<RemoteResult<void>>
     'novel/characterUpsert': (novelId: string, input: CharacterUpsertInput) => Promise<RemoteResult<CharacterRow>>
     'novel/create': (input: NovelCreateInput) => Promise<RemoteResult<NovelRow>>
+    'novel/customModelDelete': (modelKey: string) => Promise<RemoteResult<void>>
+    'novel/customModelList': () => Promise<RemoteResult<CustomModel[]>>
+    'novel/customModelSave': (input: CustomModel) => Promise<RemoteResult<CustomModel>>
     'novel/delete': (novelId: string) => Promise<RemoteResult<void>>
     'novel/detail': (novelId: string) => Promise<RemoteResult<NovelDetail>>
-    'novel/enhance': (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
+    'novel/enhance': (kind: EnhanceKind, targetId: string, actionId: string, input: EnhanceInput) => Promise<RemoteResult<EnhanceResult>>
     'novel/guideDraft': (novelId: string, stepId: string, userNote: string) => Promise<RemoteResult<EnhanceResult>>
     'novel/guideSteps': () => Promise<RemoteResult<readonly GuideStepInfo[]>>
     'novel/list': () => Promise<RemoteResult<NovelRow[]>>
+    'novel/memoCreate': (scope: string, folderId: string | null, title: string) => Promise<RemoteResult<Memo>>
+    'novel/memoData': () => Promise<RemoteResult<{ folders: MemoFolder[]; memos: Memo[]; }>>
+    'novel/memoDelete': (memoId: string) => Promise<RemoteResult<void>>
+    'novel/memoFolderCreate': (scope: string, parentId: string | null, name: string) => Promise<RemoteResult<MemoFolder>>
+    'novel/memoFolderDelete': (folderId: string) => Promise<RemoteResult<void>>
+    'novel/memoUpdate': (memoId: string, patch: { title?: string; content?: string; }) => Promise<RemoteResult<Memo>>
+    'novel/modelList': () => Promise<RemoteResult<ModelRouteInfo[]>>
     'novel/outlineDelete': (entryId: string) => Promise<RemoteResult<void>>
     'novel/outlineUpsert': (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
+    'novel/skillDelete': (name: string) => Promise<RemoteResult<void>>
+    'novel/skillList': () => Promise<RemoteResult<{ name: string; description: string; source: string; }[]>>
+    'novel/skillSave': (name: string, description: string, content: string) => Promise<RemoteResult<{ path: string; }>>
     'novel/update': (novelId: string, patch: NovelPatch) => Promise<RemoteResult<NovelRow>>
     'novel/worldDelete': (entryId: string) => Promise<RemoteResult<void>>
     'novel/worldUpsert': (novelId: string, input: WorldUpsertInput) => Promise<RemoteResult<WorldEntry>>

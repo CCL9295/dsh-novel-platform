@@ -9,6 +9,100 @@ const _deepseek_ai_dsh_novel_platform_novel_actions_result$schema = () => (_deep
   'skill': z.string().readonly(),
   'hint': z.string().readonly(),
 })))
+let _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_1$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_1$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownCreate_result$schema$value ??= z.object({
+  'breakdownId': z.string().readonly(),
+  'sourceTitle': z.string().readonly(),
+  'sourceText': z.string().readonly(),
+  'reports': z.array(z.object({
+  'skill': z.string().readonly(),
+  'label': z.string().readonly(),
+  'content': z.string().readonly(),
+})).readonly(),
+  'fused': z.string().readonly(),
+  'createdAt': z.string().readonly(),
+  'updatedAt': z.string().readonly(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_breakdownDelete_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownDelete_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownDelete_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_breakdownDelete_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownDelete_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownDelete_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_1$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_1$schema$value ??= z.object({
+  'provider': z.string().readonly().optional(),
+  'model': z.string().readonly().optional(),
+  'skill': z.string().readonly().optional(),
+  'note': z.string().readonly().optional(),
+  'memoContext': z.string().readonly().optional(),
+  'chapterContext': z.string().readonly().optional(),
+  'custom': z.object({
+  'modelKey': z.string().readonly(),
+  'displayName': z.string().readonly(),
+  'baseUrl': z.string().readonly(),
+  'apiKey': z.string().readonly(),
+  'model': z.string().readonly(),
+}).readonly().optional(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownFuse_result$schema$value ??= z.object({
+  'breakdownId': z.string().readonly(),
+  'sourceTitle': z.string().readonly(),
+  'sourceText': z.string().readonly(),
+  'reports': z.array(z.object({
+  'skill': z.string().readonly(),
+  'label': z.string().readonly(),
+  'content': z.string().readonly(),
+})).readonly(),
+  'fused': z.string().readonly(),
+  'createdAt': z.string().readonly(),
+  'updatedAt': z.string().readonly(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_breakdownList_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownList_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownList_result$schema$value ??= z.array(z.object({
+  'breakdownId': z.string().readonly(),
+  'sourceTitle': z.string().readonly(),
+  'sourceText': z.string().readonly(),
+  'reports': z.array(z.object({
+  'skill': z.string().readonly(),
+  'label': z.string().readonly(),
+  'content': z.string().readonly(),
+})).readonly(),
+  'fused': z.string().readonly(),
+  'createdAt': z.string().readonly(),
+  'updatedAt': z.string().readonly(),
+})))
+let _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_1$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_1$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_2$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_2$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_2$schema$value ??= z.object({
+  'provider': z.string().readonly().optional(),
+  'model': z.string().readonly().optional(),
+  'skill': z.string().readonly().optional(),
+  'note': z.string().readonly().optional(),
+  'memoContext': z.string().readonly().optional(),
+  'chapterContext': z.string().readonly().optional(),
+  'custom': z.object({
+  'modelKey': z.string().readonly(),
+  'displayName': z.string().readonly(),
+  'baseUrl': z.string().readonly(),
+  'apiKey': z.string().readonly(),
+  'model': z.string().readonly(),
+}).readonly().optional(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_breakdownRun_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_breakdownRun_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_breakdownRun_result$schema$value ??= z.object({
+  'skill': z.string().readonly(),
+  'label': z.string().readonly(),
+  'content': z.string().readonly(),
+}))
 let _deepseek_ai_dsh_novel_platform_novel_chapter_parameter_0$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_chapter_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_chapter_parameter_0$schema$value ??= z.string())
 let _deepseek_ai_dsh_novel_platform_novel_chapter_result$schema$value
@@ -91,6 +185,7 @@ const _deepseek_ai_dsh_novel_platform_novel_create_parameter_0$schema = () => (_
   'title': z.string().readonly(),
   'genre': z.string().readonly(),
   'description': z.string().readonly(),
+  'form': z.union([z.literal("long"), z.literal("short")]).readonly(),
 }))
 let _deepseek_ai_dsh_novel_platform_novel_create_result$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_create_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_create_result$schema$value ??= z.object({
@@ -98,9 +193,38 @@ const _deepseek_ai_dsh_novel_platform_novel_create_result$schema = () => (_deeps
   'title': z.string().readonly(),
   'genre': z.string().readonly(),
   'description': z.string().readonly(),
+  'form': z.union([z.literal("long"), z.literal("short")]).readonly(),
   'status': z.union([z.literal("draft"), z.literal("serializing"), z.literal("finished")]).readonly(),
   'createdAt': z.string().readonly(),
   'updatedAt': z.string().readonly(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_customModelDelete_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_customModelDelete_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_customModelDelete_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_customModelDelete_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_customModelDelete_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_customModelDelete_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_novel_platform_novel_customModelList_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_customModelList_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_customModelList_result$schema$value ??= z.array(z.object({
+  'modelKey': z.string().readonly(),
+  'displayName': z.string().readonly(),
+  'baseUrl': z.string().readonly(),
+  'apiKey': z.string().readonly(),
+  'model': z.string().readonly(),
+})))
+let _deepseek_ai_dsh_novel_platform_novel_customModelSave_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_customModelSave_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_customModelSave_parameter_0$schema$value ??= z.object({
+  'modelKey': z.string().readonly(),
+  'displayName': z.string().readonly(),
+  'baseUrl': z.string().readonly(),
+  'apiKey': z.string().readonly(),
+  'model': z.string().readonly(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_customModelSave_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_customModelSave_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_customModelSave_result$schema$value ??= z.object({
+  'modelKey': z.string().readonly(),
+  'displayName': z.string().readonly(),
+  'baseUrl': z.string().readonly(),
+  'apiKey': z.string().readonly(),
+  'model': z.string().readonly(),
 }))
 let _deepseek_ai_dsh_novel_platform_novel_delete_parameter_0$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_delete_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_delete_parameter_0$schema$value ??= z.string())
@@ -115,6 +239,7 @@ const _deepseek_ai_dsh_novel_platform_novel_detail_result$schema = () => (_deeps
   'title': z.string().readonly(),
   'genre': z.string().readonly(),
   'description': z.string().readonly(),
+  'form': z.union([z.literal("long"), z.literal("short")]).readonly(),
   'status': z.union([z.literal("draft"), z.literal("serializing"), z.literal("finished")]).readonly(),
   'createdAt': z.string().readonly(),
   'updatedAt': z.string().readonly(),
@@ -160,6 +285,22 @@ let _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_1$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_enhance_parameter_1$schema$value ??= z.string())
 let _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_2$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_2$schema = () => (_deepseek_ai_dsh_novel_platform_novel_enhance_parameter_2$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_3$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_3$schema = () => (_deepseek_ai_dsh_novel_platform_novel_enhance_parameter_3$schema$value ??= z.object({
+  'provider': z.string().readonly().optional(),
+  'model': z.string().readonly().optional(),
+  'skill': z.string().readonly().optional(),
+  'note': z.string().readonly().optional(),
+  'memoContext': z.string().readonly().optional(),
+  'chapterContext': z.string().readonly().optional(),
+  'custom': z.object({
+  'modelKey': z.string().readonly(),
+  'displayName': z.string().readonly(),
+  'baseUrl': z.string().readonly(),
+  'apiKey': z.string().readonly(),
+  'model': z.string().readonly(),
+}).readonly().optional(),
+}))
 let _deepseek_ai_dsh_novel_platform_novel_enhance_result$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_enhance_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_enhance_result$schema$value ??= z.object({
   'actionId': z.string().readonly(),
@@ -198,9 +339,87 @@ const _deepseek_ai_dsh_novel_platform_novel_list_result$schema = () => (_deepsee
   'title': z.string().readonly(),
   'genre': z.string().readonly(),
   'description': z.string().readonly(),
+  'form': z.union([z.literal("long"), z.literal("short")]).readonly(),
   'status': z.union([z.literal("draft"), z.literal("serializing"), z.literal("finished")]).readonly(),
   'createdAt': z.string().readonly(),
   'updatedAt': z.string().readonly(),
+})))
+let _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_1$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_1$schema$value ??= z.union([z.literal(null), z.string()]))
+let _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_2$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_2$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_2$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_memoCreate_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoCreate_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoCreate_result$schema$value ??= z.object({
+  'memoId': z.string().readonly(),
+  'scope': z.union([z.literal("global"), z.intersection(z.string(), z.object({}))]).readonly(),
+  'folderId': z.union([z.literal(null), z.string()]).readonly(),
+  'title': z.string().readonly(),
+  'content': z.string().readonly(),
+  'createdAt': z.string().readonly(),
+  'updatedAt': z.string().readonly(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_memoData_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoData_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoData_result$schema$value ??= z.object({
+  'folders': z.array(z.object({
+  'folderId': z.string().readonly(),
+  'scope': z.union([z.literal("global"), z.intersection(z.string(), z.object({}))]).readonly(),
+  'parentId': z.union([z.literal(null), z.string()]).readonly(),
+  'name': z.string().readonly(),
+})),
+  'memos': z.array(z.object({
+  'memoId': z.string().readonly(),
+  'scope': z.union([z.literal("global"), z.intersection(z.string(), z.object({}))]).readonly(),
+  'folderId': z.union([z.literal(null), z.string()]).readonly(),
+  'title': z.string().readonly(),
+  'content': z.string().readonly(),
+  'createdAt': z.string().readonly(),
+  'updatedAt': z.string().readonly(),
+})),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_memoDelete_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoDelete_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoDelete_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_memoDelete_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoDelete_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoDelete_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_1$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_1$schema$value ??= z.union([z.literal(null), z.string()]))
+let _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_2$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_2$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_2$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_result$schema$value ??= z.object({
+  'folderId': z.string().readonly(),
+  'scope': z.union([z.literal("global"), z.intersection(z.string(), z.object({}))]).readonly(),
+  'parentId': z.union([z.literal(null), z.string()]).readonly(),
+  'name': z.string().readonly(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_1$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_1$schema$value ??= z.object({
+  'title': z.string().optional(),
+  'content': z.string().optional(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_memoUpdate_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_memoUpdate_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_memoUpdate_result$schema$value ??= z.object({
+  'memoId': z.string().readonly(),
+  'scope': z.union([z.literal("global"), z.intersection(z.string(), z.object({}))]).readonly(),
+  'folderId': z.union([z.literal(null), z.string()]).readonly(),
+  'title': z.string().readonly(),
+  'content': z.string().readonly(),
+  'createdAt': z.string().readonly(),
+  'updatedAt': z.string().readonly(),
+}))
+let _deepseek_ai_dsh_novel_platform_novel_modelList_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_modelList_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_modelList_result$schema$value ??= z.array(z.object({
+  'provider': z.string().readonly(),
+  'models': z.array(z.string()).readonly(),
 })))
 let _deepseek_ai_dsh_novel_platform_novel_outlineDelete_parameter_0$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_outlineDelete_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_outlineDelete_parameter_0$schema$value ??= z.string())
@@ -223,6 +442,26 @@ const _deepseek_ai_dsh_novel_platform_novel_outlineUpsert_result$schema = () => 
   'summary': z.string().readonly(),
   'updatedAt': z.string().readonly(),
 }))
+let _deepseek_ai_dsh_novel_platform_novel_skillDelete_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_skillDelete_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_skillDelete_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_skillDelete_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_skillDelete_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_skillDelete_result$schema$value ??= z.void())
+let _deepseek_ai_dsh_novel_platform_novel_skillList_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_skillList_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_skillList_result$schema$value ??= z.array(z.object({
+  'name': z.string(),
+  'description': z.string(),
+  'source': z.string(),
+})))
+let _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_0$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_0$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_1$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_1$schema = () => (_deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_1$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_2$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_2$schema = () => (_deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_2$schema$value ??= z.string())
+let _deepseek_ai_dsh_novel_platform_novel_skillSave_result$schema$value
+const _deepseek_ai_dsh_novel_platform_novel_skillSave_result$schema = () => (_deepseek_ai_dsh_novel_platform_novel_skillSave_result$schema$value ??= z.object({
+  'path': z.string(),
+}))
 let _deepseek_ai_dsh_novel_platform_novel_update_parameter_0$schema$value
 const _deepseek_ai_dsh_novel_platform_novel_update_parameter_0$schema = () => (_deepseek_ai_dsh_novel_platform_novel_update_parameter_0$schema$value ??= z.string())
 let _deepseek_ai_dsh_novel_platform_novel_update_parameter_1$schema$value
@@ -238,6 +477,7 @@ const _deepseek_ai_dsh_novel_platform_novel_update_result$schema = () => (_deeps
   'title': z.string().readonly(),
   'genre': z.string().readonly(),
   'description': z.string().readonly(),
+  'form': z.union([z.literal("long"), z.literal("short")]).readonly(),
   'status': z.union([z.literal("draft"), z.literal("serializing"), z.literal("finished")]).readonly(),
   'createdAt': z.string().readonly(),
   'updatedAt': z.string().readonly(),
@@ -284,7 +524,167 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/actions:result',
         create: _deepseek_ai_dsh_novel_platform_novel_actions_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":201,"column":3},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":207,"column":3},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/breakdownCreate',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'breakdownCreate',
+      implementation: 'createBreakdown',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'sourceTitle',
+          wire: 'sourceTitle',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownCreate:sourceTitle',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_0$schema,
+          },
+        },
+        {
+          name: 'sourceText',
+          wire: 'sourceText',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownCreate:sourceText',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_parameter_1$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform/types#Breakdown',
+        create: _deepseek_ai_dsh_novel_platform_novel_breakdownCreate_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":299,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/breakdownDelete',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'breakdownDelete',
+      implementation: 'deleteBreakdown',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'breakdownId',
+          wire: 'breakdownId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownDelete:breakdownId',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownDelete_parameter_0$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownDelete:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_breakdownDelete_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":311,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/breakdownFuse',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'breakdownFuse',
+      implementation: 'fuseBreakdown',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'breakdownId',
+          wire: 'breakdownId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownFuse:breakdownId',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_0$schema,
+          },
+        },
+        {
+          name: 'input',
+          wire: 'input',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform/types#EnhanceInput',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_parameter_1$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform/types#Breakdown',
+        create: _deepseek_ai_dsh_novel_platform_novel_breakdownFuse_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":328,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/breakdownList',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'breakdownList',
+      implementation: 'listBreakdowns',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownList:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_breakdownList_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":305,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/breakdownRun',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'breakdownRun',
+      implementation: 'runBreakdown',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'breakdownId',
+          wire: 'breakdownId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownRun:breakdownId',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_0$schema,
+          },
+        },
+        {
+          name: 'skill',
+          wire: 'skill',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/breakdownRun:skill',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_1$schema,
+          },
+        },
+        {
+          name: 'input',
+          wire: 'input',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform/types#EnhanceInput',
+            create: _deepseek_ai_dsh_novel_platform_novel_breakdownRun_parameter_2$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform/types#BreakdownReport',
+        create: _deepseek_ai_dsh_novel_platform_novel_breakdownRun_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":317,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/chapter',
@@ -310,7 +710,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#ChapterDetail',
         create: _deepseek_ai_dsh_novel_platform_novel_chapter_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":91,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":97,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/chapterCreate',
@@ -346,7 +746,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#ChapterRow',
         create: _deepseek_ai_dsh_novel_platform_novel_chapterCreate_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":131,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":137,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/chapterDelete',
@@ -372,7 +772,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/chapterDelete:result',
         create: _deepseek_ai_dsh_novel_platform_novel_chapterDelete_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":151,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":157,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/chapterUpdate',
@@ -408,7 +808,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#ChapterRow',
         create: _deepseek_ai_dsh_novel_platform_novel_chapterUpdate_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":141,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":147,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/characterDelete',
@@ -434,7 +834,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/characterDelete:result',
         create: _deepseek_ai_dsh_novel_platform_novel_characterDelete_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":171,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":177,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/characterUpsert',
@@ -470,7 +870,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#CharacterRow',
         create: _deepseek_ai_dsh_novel_platform_novel_characterUpsert_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":161,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":167,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/create',
@@ -496,7 +896,75 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#NovelRow',
         create: _deepseek_ai_dsh_novel_platform_novel_create_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":101,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":107,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/customModelDelete',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'customModelDelete',
+      implementation: 'deleteCustomModel',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'modelKey',
+          wire: 'modelKey',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/customModelDelete:modelKey',
+            create: _deepseek_ai_dsh_novel_platform_novel_customModelDelete_parameter_0$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/customModelDelete:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_customModelDelete_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":387,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/customModelList',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'customModelList',
+      implementation: 'listCustomModels',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/customModelList:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_customModelList_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":375,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/customModelSave',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'customModelSave',
+      implementation: 'saveCustomModel',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'input',
+          wire: 'input',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform/types#CustomModel',
+            create: _deepseek_ai_dsh_novel_platform_novel_customModelSave_parameter_0$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform/types#CustomModel',
+        create: _deepseek_ai_dsh_novel_platform_novel_customModelSave_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":381,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/delete',
@@ -522,7 +990,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/delete:result',
         create: _deepseek_ai_dsh_novel_platform_novel_delete_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":121,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":127,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/detail',
@@ -548,7 +1016,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#NovelDetail',
         create: _deepseek_ai_dsh_novel_platform_novel_detail_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":81,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":87,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/enhance',
@@ -587,13 +1055,23 @@ export const TYPERT = {
             create: _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_2$schema,
           },
         },
+        {
+          name: 'input',
+          wire: 'input',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform/types#EnhanceInput',
+            create: _deepseek_ai_dsh_novel_platform_novel_enhance_parameter_3$schema,
+          },
+        },
       ],
       result: {
         mode: 'strict',
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#EnhanceResult',
         create: _deepseek_ai_dsh_novel_platform_novel_enhance_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":207,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":213,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/guideDraft',
@@ -638,7 +1116,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#EnhanceResult',
         create: _deepseek_ai_dsh_novel_platform_novel_guideDraft_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":223,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":229,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/guideSteps',
@@ -653,7 +1131,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/guideSteps:result',
         create: _deepseek_ai_dsh_novel_platform_novel_guideSteps_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":217,"column":3},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":223,"column":3},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/list',
@@ -669,7 +1147,218 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/list:result',
         create: _deepseek_ai_dsh_novel_platform_novel_list_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":71,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":77,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/memoCreate',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'memoCreate',
+      implementation: 'createMemo',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'scope',
+          wire: 'scope',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoCreate:scope',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_0$schema,
+          },
+        },
+        {
+          name: 'folderId',
+          wire: 'folderId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoCreate:folderId',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_1$schema,
+          },
+        },
+        {
+          name: 'title',
+          wire: 'title',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoCreate:title',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoCreate_parameter_2$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform/types#Memo',
+        create: _deepseek_ai_dsh_novel_platform_novel_memoCreate_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":279,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/memoData',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'memoData',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoData:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_memoData_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":261,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/memoDelete',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'memoDelete',
+      implementation: 'deleteMemo',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'memoId',
+          wire: 'memoId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoDelete:memoId',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoDelete_parameter_0$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoDelete:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_memoDelete_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":291,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/memoFolderCreate',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'memoFolderCreate',
+      implementation: 'createMemoFolder',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'scope',
+          wire: 'scope',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoFolderCreate:scope',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_0$schema,
+          },
+        },
+        {
+          name: 'parentId',
+          wire: 'parentId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoFolderCreate:parentId',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_1$schema,
+          },
+        },
+        {
+          name: 'name',
+          wire: 'name',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoFolderCreate:name',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_parameter_2$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform/types#MemoFolder',
+        create: _deepseek_ai_dsh_novel_platform_novel_memoFolderCreate_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":267,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/memoFolderDelete',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'memoFolderDelete',
+      implementation: 'deleteMemoFolder',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'folderId',
+          wire: 'folderId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoFolderDelete:folderId',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_parameter_0$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoFolderDelete:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_memoFolderDelete_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":273,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/memoUpdate',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'memoUpdate',
+      implementation: 'updateMemo',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'memoId',
+          wire: 'memoId',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoUpdate:memoId',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_0$schema,
+          },
+        },
+        {
+          name: 'patch',
+          wire: 'patch',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/memoUpdate:patch',
+            create: _deepseek_ai_dsh_novel_platform_novel_memoUpdate_parameter_1$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform/types#Memo',
+        create: _deepseek_ai_dsh_novel_platform_novel_memoUpdate_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":285,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/modelList',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'modelList',
+      implementation: 'listModels',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/modelList:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_modelList_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":369,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/outlineDelete',
@@ -695,7 +1384,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/outlineDelete:result',
         create: _deepseek_ai_dsh_novel_platform_novel_outlineDelete_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":191,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":197,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/outlineUpsert',
@@ -731,7 +1420,95 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#OutlineRow',
         create: _deepseek_ai_dsh_novel_platform_novel_outlineUpsert_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":181,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":187,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/skillDelete',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'skillDelete',
+      implementation: 'deleteSkill',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'name',
+          wire: 'name',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/skillDelete:name',
+            create: _deepseek_ai_dsh_novel_platform_novel_skillDelete_parameter_0$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/skillDelete:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_skillDelete_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":357,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/skillList',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'skillList',
+      implementation: 'listSkills',
+      invocation: { kind: 'direct' },
+      parameters: [
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/skillList:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_skillList_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":341,"column":9},
+    },
+    {
+      id: '@deepseek-ai/dsh-novel-platform#novel/skillSave',
+      service: 'novel',
+      namespace: 'novel',
+      method: 'skillSave',
+      implementation: 'saveSkill',
+      invocation: { kind: 'direct' },
+      parameters: [
+        {
+          name: 'name',
+          wire: 'name',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/skillSave:name',
+            create: _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_0$schema,
+          },
+        },
+        {
+          name: 'description',
+          wire: 'description',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/skillSave:description',
+            create: _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_1$schema,
+          },
+        },
+        {
+          name: 'content',
+          wire: 'content',
+          source: 'json',
+          codec: {
+            mode: 'strict',
+            typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/skillSave:content',
+            create: _deepseek_ai_dsh_novel_platform_novel_skillSave_parameter_2$schema,
+          },
+        },
+      ],
+      result: {
+        mode: 'strict',
+        typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/skillSave:result',
+        create: _deepseek_ai_dsh_novel_platform_novel_skillSave_result$schema,
+      },
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":347,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/update',
@@ -767,7 +1544,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#NovelRow',
         create: _deepseek_ai_dsh_novel_platform_novel_update_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":111,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":117,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/worldDelete',
@@ -793,7 +1570,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform#novel/worldDelete:result',
         create: _deepseek_ai_dsh_novel_platform_novel_worldDelete_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":243,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":249,"column":9},
     },
     {
       id: '@deepseek-ai/dsh-novel-platform#novel/worldUpsert',
@@ -829,7 +1606,7 @@ export const TYPERT = {
         typeSymbol: '@deepseek-ai/dsh-novel-platform/types#WorldEntry',
         create: _deepseek_ai_dsh_novel_platform_novel_worldUpsert_result$schema,
       },
-      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":233,"column":9},
+      sourceLocation: {"file":"packages/extensions/novel-platform/src/controller.ts","line":239,"column":9},
     },
   ],
   model: {
@@ -946,9 +1723,122 @@ export const TYPERT = {
             "signature": "async deleteWorldEntry(entryId: string): Promise<void>",
             "summary": "Delete one world entry by id.",
             "jsDoc": "/** Delete one world entry by id. */"
+          },
+          {
+            "kind": "method",
+            "name": "listMemoData",
+            "signature": "async listMemoData(): Promise<{ folders: MemoFolder[]; memos: Memo[] }>",
+            "summary": "List every memo folder and note (both scopes); the panel filters.",
+            "jsDoc": "/** List every memo folder and note (both scopes); the panel filters. */"
+          },
+          {
+            "kind": "method",
+            "name": "createMemoFolder",
+            "signature": "async createMemoFolder(scope: string, parentId: string | null, name: string): Promise<MemoFolder>",
+            "summary": "Create one memo folder.",
+            "jsDoc": "/** Create one memo folder. */"
+          },
+          {
+            "kind": "method",
+            "name": "deleteMemoFolder",
+            "signature": "async deleteMemoFolder(folderId: string): Promise<void>",
+            "summary": "Delete one memo folder; nested folders and their memos go with it.",
+            "jsDoc": "/** Delete one memo folder; nested folders and their memos go with it. */"
+          },
+          {
+            "kind": "method",
+            "name": "createMemo",
+            "signature": "async createMemo(scope: string, folderId: string | null, title: string): Promise<Memo>",
+            "summary": "Create one memo note.",
+            "jsDoc": "/** Create one memo note. */"
+          },
+          {
+            "kind": "method",
+            "name": "updateMemo",
+            "signature": "async updateMemo(memoId: string, patch: { title?: string; content?: string }): Promise<Memo>",
+            "summary": "Update one memo's title and/or content.",
+            "jsDoc": "/** Update one memo's title and/or content. */"
+          },
+          {
+            "kind": "method",
+            "name": "deleteMemo",
+            "signature": "async deleteMemo(memoId: string): Promise<void>",
+            "summary": "Delete one memo note.",
+            "jsDoc": "/** Delete one memo note. */"
+          },
+          {
+            "kind": "method",
+            "name": "createBreakdown",
+            "signature": "async createBreakdown(sourceTitle: string, sourceText: string): Promise<Breakdown>",
+            "summary": "Create one breakdown job from pasted or imported source text.",
+            "jsDoc": "/** Create one breakdown job from pasted or imported source text. */"
+          },
+          {
+            "kind": "method",
+            "name": "listBreakdowns",
+            "signature": "async listBreakdowns(): Promise<Breakdown[]>",
+            "summary": "List every breakdown (newest first).",
+            "jsDoc": "/** List every breakdown (newest first). */"
+          },
+          {
+            "kind": "method",
+            "name": "getBreakdown",
+            "signature": "async getBreakdown(breakdownId: string): Promise<Breakdown>",
+            "summary": "Read one breakdown or fail.",
+            "jsDoc": "/** Read one breakdown or fail. */"
+          },
+          {
+            "kind": "method",
+            "name": "addBreakdownReport",
+            "signature": "async addBreakdownReport(breakdownId: string, report: BreakdownReport): Promise<Breakdown>",
+            "summary": "Store one skill-dimension report (replaces the same skill's report).",
+            "jsDoc": "/** Store one skill-dimension report (replaces the same skill's report). */"
+          },
+          {
+            "kind": "method",
+            "name": "setBreakdownFused",
+            "signature": "async setBreakdownFused(breakdownId: string, fused: string): Promise<Breakdown>",
+            "summary": "Store the fused synthesis document.",
+            "jsDoc": "/** Store the fused synthesis document. */"
+          },
+          {
+            "kind": "method",
+            "name": "deleteBreakdown",
+            "signature": "async deleteBreakdown(breakdownId: string): Promise<void>",
+            "summary": "Delete one breakdown job.",
+            "jsDoc": "/** Delete one breakdown job. */"
+          },
+          {
+            "kind": "method",
+            "name": "listCustomModels",
+            "signature": "async listCustomModels(): Promise<CustomModel[]>",
+            "summary": "List every user-added custom model route.",
+            "jsDoc": "/** List every user-added custom model route. */"
+          },
+          {
+            "kind": "method",
+            "name": "saveCustomModel",
+            "signature": "async saveCustomModel(input: CustomModel): Promise<CustomModel>",
+            "summary": "Add or update one custom model route keyed by modelKey.",
+            "jsDoc": "/** Add or update one custom model route keyed by modelKey. */"
+          },
+          {
+            "kind": "method",
+            "name": "deleteCustomModel",
+            "signature": "async deleteCustomModel(modelKey: string): Promise<void>",
+            "summary": "Delete one custom model route.",
+            "jsDoc": "/** Delete one custom model route. */"
           }
         ],
         "types": [
+          {
+            "name": "Breakdown",
+            "declaration": "export interface Breakdown {\n    readonly breakdownId: string;\n    readonly sourceTitle: string;\n    readonly sourceText: string;\n    readonly reports: readonly BreakdownReport[];\n    readonly fused: string;\n    readonly createdAt: string;\n    readonly updatedAt: string;\n}"
+          },
+          {
+            "name": "BreakdownReport",
+            "declaration": "export interface BreakdownReport {\n    readonly skill: string;\n    readonly label: string;\n    readonly content: string;\n}"
+          },
           {
             "name": "ChapterCreateInput",
             "declaration": "export interface ChapterCreateInput {\n    readonly title: string;\n    readonly content: string;\n    readonly status: ChapterStatus;\n}"
@@ -982,12 +1872,28 @@ export const TYPERT = {
             "declaration": "export interface CharacterUpsertInput {\n    readonly name: string;\n    readonly role: CharacterRole;\n    readonly profile: string;\n}"
           },
           {
+            "name": "CustomModel",
+            "declaration": "export interface CustomModel {\n    readonly modelKey: string;\n    readonly displayName: string;\n    readonly baseUrl: string;\n    readonly apiKey: string;\n    readonly model: string;\n}"
+          },
+          {
+            "name": "Memo",
+            "declaration": "export interface Memo {\n    readonly memoId: string;\n    readonly scope: 'global' | (string & {});\n    readonly folderId: string | null;\n    readonly title: string;\n    readonly content: string;\n    readonly createdAt: string;\n    readonly updatedAt: string;\n}"
+          },
+          {
+            "name": "MemoFolder",
+            "declaration": "export interface MemoFolder {\n    readonly folderId: string;\n    readonly scope: 'global' | (string & {});\n    readonly parentId: string | null;\n    readonly name: string;\n}"
+          },
+          {
             "name": "NovelCreateInput",
-            "declaration": "export interface NovelCreateInput {\n    readonly title: string;\n    readonly genre: string;\n    readonly description: string;\n}"
+            "declaration": "export interface NovelCreateInput {\n    readonly title: string;\n    readonly genre: string;\n    readonly description: string;\n    readonly form: NovelForm;\n}"
           },
           {
             "name": "NovelDetail",
             "declaration": "export interface NovelDetail {\n    readonly novel: NovelRow;\n    readonly chapters: readonly ChapterRow[];\n    readonly characters: readonly CharacterRow[];\n    readonly outline: readonly OutlineRow[];\n    readonly world: readonly WorldEntry[];\n}"
+          },
+          {
+            "name": "NovelForm",
+            "declaration": "export type NovelForm = 'long' | 'short';"
           },
           {
             "name": "NovelPatch",
@@ -995,7 +1901,7 @@ export const TYPERT = {
           },
           {
             "name": "NovelRow",
-            "declaration": "export interface NovelRow {\n    readonly novelId: string;\n    readonly title: string;\n    readonly genre: string;\n    readonly description: string;\n    readonly status: NovelStatus;\n    readonly createdAt: string;\n    readonly updatedAt: string;\n}"
+            "declaration": "export interface NovelRow {\n    readonly novelId: string;\n    readonly title: string;\n    readonly genre: string;\n    readonly description: string;\n    readonly form: NovelForm;\n    readonly status: NovelStatus;\n    readonly createdAt: string;\n    readonly updatedAt: string;\n}"
           },
           {
             "name": "NovelStatus",

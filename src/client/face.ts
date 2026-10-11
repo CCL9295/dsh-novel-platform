@@ -8,10 +8,12 @@ import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 // Wire vocabulary comes from the package's client-safe types export (built by the host face).
 import type {
-  ChapterDetail, ChapterPatch, ChapterRow, CharacterRow, CharacterUpsertInput,
-  ChapterCreateInput, EnhanceActionInfo, EnhanceKind, EnhanceResult,
-  NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
+  Breakdown, BreakdownReport, ChapterDetail, ChapterPatch, ChapterRow,
+  CharacterRow, CharacterUpsertInput, ChapterCreateInput, EnhanceActionInfo,
+  EnhanceInput, EnhanceKind, EnhanceResult, Memo, MemoFolder, MemoPatch,
+  ModelRouteInfo, NovelCreateInput, NovelDetail, NovelPatch, NovelRow,
   OutlineRow, OutlineUpsertInput, WorldEntry, WorldUpsertInput,
+  CustomModel,
 } from '@deepseek-ai/dsh-novel-platform/types'
 
 /** Remote failure carrying its wire code, for code-aware UI decisions. */
@@ -52,11 +54,29 @@ interface NovelNamespace {
   outlineUpsert: (novelId: string, input: OutlineUpsertInput) => Promise<RemoteResult<OutlineRow>>
   outlineDelete: (entryId: string) => Promise<RemoteResult<void>>
   actions: () => Promise<RemoteResult<EnhanceActionInfo[]>>
-  enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<RemoteResult<EnhanceResult>>
+  enhance: (kind: EnhanceKind, targetId: string, actionId: string, input: EnhanceInput) => Promise<RemoteResult<EnhanceResult>>
   guideSteps: () => Promise<RemoteResult<readonly { stepId: string; order: number; label: string; skill: string; category: string; title: string; question: string }[]>>
   guideDraft: (novelId: string, stepId: string, userNote: string) => Promise<RemoteResult<EnhanceResult>>
   worldUpsert: (novelId: string, input: WorldUpsertInput) => Promise<RemoteResult<WorldEntry>>
   worldDelete: (entryId: string) => Promise<RemoteResult<void>>
+  memoData: () => Promise<RemoteResult<{ folders: MemoFolder[]; memos: Memo[] }>>
+  memoFolderCreate: (scope: string, parentId: string | null, name: string) => Promise<RemoteResult<MemoFolder>>
+  memoFolderDelete: (folderId: string) => Promise<RemoteResult<void>>
+  memoCreate: (scope: string, folderId: string | null, title: string) => Promise<RemoteResult<Memo>>
+  memoUpdate: (memoId: string, patch: { title?: string; content?: string }) => Promise<RemoteResult<Memo>>
+  memoDelete: (memoId: string) => Promise<RemoteResult<void>>
+  breakdownCreate: (sourceTitle: string, sourceText: string) => Promise<RemoteResult<Breakdown>>
+  breakdownList: () => Promise<RemoteResult<Breakdown[]>>
+  breakdownDelete: (breakdownId: string) => Promise<RemoteResult<void>>
+  breakdownRun: (breakdownId: string, skill: string, input: EnhanceInput) => Promise<RemoteResult<BreakdownReport>>
+  breakdownFuse: (breakdownId: string, input: EnhanceInput) => Promise<RemoteResult<Breakdown>>
+  skillList: () => Promise<RemoteResult<{ name: string; description: string; source: string }[]>>
+  skillSave: (name: string, description: string, content: string) => Promise<RemoteResult<{ path: string }>>
+  skillDelete: (name: string) => Promise<RemoteResult<void>>
+  modelList: () => Promise<RemoteResult<ModelRouteInfo[]>>
+  customModelList: () => Promise<RemoteResult<CustomModel[]>>
+  customModelSave: (input: CustomModel) => Promise<RemoteResult<CustomModel>>
+  customModelDelete: (modelKey: string) => Promise<RemoteResult<void>>
 }
 
 /** The browser face the writing-desk page consumes. */
@@ -75,11 +95,29 @@ export interface NovelFace {
   readonly upsertOutlineEntry: (novelId: string, input: OutlineUpsertInput) => Promise<OutlineRow>
   readonly deleteOutlineEntry: (entryId: string) => Promise<void>
   readonly listActions: () => Promise<EnhanceActionInfo[]>
-  readonly enhance: (kind: EnhanceKind, targetId: string, actionId: string) => Promise<EnhanceResult>
   readonly guideSteps: () => Promise<readonly { stepId: string; order: number; label: string; skill: string; category: string; title: string; question: string }[]>
   readonly guideDraft: (novelId: string, stepId: string, userNote: string) => Promise<EnhanceResult>
   readonly upsertWorldEntry: (novelId: string, input: WorldUpsertInput) => Promise<WorldEntry>
   readonly deleteWorldEntry: (entryId: string) => Promise<void>
+  readonly enhanceWith: (kind: EnhanceKind, targetId: string, actionId: string, input: EnhanceInput) => Promise<EnhanceResult>
+  readonly memoData: () => Promise<{ folders: MemoFolder[]; memos: Memo[] }>
+  readonly memoFolderCreate: (scope: string, parentId: string | null, name: string) => Promise<MemoFolder>
+  readonly memoFolderDelete: (folderId: string) => Promise<void>
+  readonly memoCreate: (scope: string, folderId: string | null, title: string) => Promise<Memo>
+  readonly memoUpdate: (memoId: string, patch: MemoPatch) => Promise<Memo>
+  readonly memoDelete: (memoId: string) => Promise<void>
+  readonly breakdownCreate: (sourceTitle: string, sourceText: string) => Promise<Breakdown>
+  readonly breakdownList: () => Promise<Breakdown[]>
+  readonly breakdownDelete: (breakdownId: string) => Promise<void>
+  readonly breakdownRun: (breakdownId: string, skill: string, input: EnhanceInput) => Promise<BreakdownReport>
+  readonly breakdownFuse: (breakdownId: string, input: EnhanceInput) => Promise<Breakdown>
+  readonly skillList: () => Promise<{ name: string; description: string; source: string }[]>
+  readonly skillSave: (name: string, description: string, content: string) => Promise<{ path: string }>
+  readonly skillDelete: (name: string) => Promise<void>
+  readonly modelList: () => Promise<ModelRouteInfo[]>
+  readonly customModelList: () => Promise<CustomModel[]>
+  readonly customModelSave: (input: CustomModel) => Promise<CustomModel>
+  readonly customModelDelete: (modelKey: string) => Promise<void>
 }
 
 /**
@@ -106,10 +144,28 @@ export function createNovelFace(ctx: ClientContext): NovelFace {
     upsertOutlineEntry: (novelId, input) => unwrap(remote().outlineUpsert(novelId, input)),
     deleteOutlineEntry: entryId => unwrap(remote().outlineDelete(entryId)),
     listActions: () => unwrap(remote().actions()),
-    enhance: (kind, targetId, actionId) => unwrap(remote().enhance(kind, targetId, actionId)),
     guideSteps: () => unwrap(remote().guideSteps()),
     guideDraft: (novelId, stepId, userNote) => unwrap(remote().guideDraft(novelId, stepId, userNote)),
     upsertWorldEntry: (novelId, input) => unwrap(remote().worldUpsert(novelId, input)),
     deleteWorldEntry: entryId => unwrap(remote().worldDelete(entryId)),
+    enhanceWith: (kind, targetId, actionId, input) => unwrap(remote().enhance(kind, targetId, actionId, input)),
+    memoData: () => unwrap(remote().memoData()),
+    memoFolderCreate: (scope, parentId, name) => unwrap(remote().memoFolderCreate(scope, parentId, name)),
+    memoFolderDelete: folderId => unwrap(remote().memoFolderDelete(folderId)),
+    memoCreate: (scope, folderId, title) => unwrap(remote().memoCreate(scope, folderId, title)),
+    memoUpdate: (memoId, patch) => unwrap(remote().memoUpdate(memoId, patch)),
+    memoDelete: memoId => unwrap(remote().memoDelete(memoId)),
+    breakdownCreate: (sourceTitle, sourceText) => unwrap(remote().breakdownCreate(sourceTitle, sourceText)),
+    breakdownList: () => unwrap(remote().breakdownList()),
+    breakdownDelete: breakdownId => unwrap(remote().breakdownDelete(breakdownId)),
+    breakdownRun: (breakdownId, skill, input) => unwrap(remote().breakdownRun(breakdownId, skill, input)),
+    breakdownFuse: (breakdownId, input) => unwrap(remote().breakdownFuse(breakdownId, input)),
+    skillList: () => unwrap(remote().skillList()),
+    skillSave: (name, description, content) => unwrap(remote().skillSave(name, description, content)),
+    skillDelete: name => unwrap(remote().skillDelete(name)),
+    modelList: () => unwrap(remote().modelList()),
+    customModelList: () => unwrap(remote().customModelList()),
+    customModelSave: input => unwrap(remote().customModelSave(input)),
+    customModelDelete: modelKey => unwrap(remote().customModelDelete(modelKey)),
   }
 }
